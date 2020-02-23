@@ -1,0 +1,16 @@
+[package]
+name = "simd-json-schema"
+version = "0.1.0"
+authors = ["Ernad Halilovic <ernadh@gmail.com>"]
+edition = "2018"
+build = "build.rs"
+
+[dependencies]
+simd-json = { version = "0.2.4" }
+url = { version = "1" }
+hashbrown = { version = "0.7" }
+uuid = {version = "0.8", features = ["v4"]}
+phf = "0.7"
+
+[build-dependencies.phf_codegen]
+version = "0.7"
