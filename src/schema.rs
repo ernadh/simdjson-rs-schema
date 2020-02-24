@@ -14,14 +14,14 @@ use super::scope;
 use super::validators;
 
 #[derive(Debug)]
-pub struct Schema<'a, V>
+pub struct Schema<V>
 where
     V: ValueTrait,
 {
     pub id: Option<url::Url>,
     schema: Option<url::Url>,
-    original: Value<'a>,
-    tree: collections::BTreeMap<String, Schema<'a, V>>,
+    original: Value<'static>,
+    tree: collections::BTreeMap<String, Schema<V>>,
     validators: validators::Validators<V>,
     scopes: hashbrown::HashMap<String, Vec<String>>,
 }
@@ -103,8 +103,8 @@ pub struct ScopedSchema<'a, V>
 where
     V: ValueTrait,
 {
-    scope: &'a scope::Scope<'a, V>,
-    schema: &'a Schema<'a, V>,
+    scope: &'a scope::Scope<V>,
+    schema: &'a Schema<V>,
 }
 
 impl<'a, V> ScopedSchema<'a, V>
@@ -124,7 +124,7 @@ where
     }
 }
 
-impl<'a, V> Schema<'a, V>
+impl<'a, V> Schema<V>
 where
     V: ValueTrait,
 {
@@ -170,10 +170,10 @@ where
     }
 
     fn compile(
-        def: Value<'a>,
+        def: Value<'static>,
         external_id: Option<url::Url>,
         settings: CompilationSettings<'_, V>,
-    ) -> Result<Schema<'a, V>, SchemaError> {
+    ) -> Result<Schema<V>, SchemaError> {
         let def = helpers::convert_boolean_schema(def);
 
         if !def.is_object() {
@@ -304,11 +304,11 @@ where
         Ok(validators)
     }
     fn compile_sub(
-        def: Value<'a>,
+        def: Value<'static>,
         context: &mut WalkContext<'_>,
         keywords: &CompilationSettings<'_, V>,
         is_schema: bool,
-    ) -> Result<Schema<'a, V>, SchemaError> {
+    ) -> Result<Schema<V>, SchemaError> {
         let def = helpers::convert_boolean_schema(def);
 
         let id = if is_schema {
@@ -414,10 +414,10 @@ where
 }
 
 pub fn compile<'a, V>(
-    def: Value<'a>,
+    def: Value<'static>,
     external_id: Option<url::Url>,
     settings: CompilationSettings<'_, V>,
-) -> Result<Schema<'a, V>, SchemaError>
+) -> Result<Schema<V>, SchemaError>
 where
     V: ValueTrait,
 {

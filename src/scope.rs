@@ -6,20 +6,20 @@ use simd_json::value::{BorrowedValue as Value, Value as ValueTrait};
 use super::helpers;
 
 #[derive(Debug)]
-pub struct Scope<'a, V>
+pub struct Scope<V>
 where
     V: ValueTrait,
 {
     keywords: keywords::KeywordMap<V>,
-    schemes: HashMap<String, schema::Schema<'a, V>>,
+    schemes: HashMap<String, schema::Schema<V>>,
 }
 
-impl<'a, V> Scope<'a, V>
+impl<'a, V> Scope<V>
 where
     V: ValueTrait,
 {
-    pub fn new() -> Scope<'a, V> {
-        let mut scope = Scope {
+    pub fn new() -> Scope<V> {
+        let scope = Scope {
             keywords: keywords::default(),
             schemes: HashMap::new(),
         };
@@ -51,7 +51,7 @@ where
 
     pub fn compile_and_return(
         &'_ mut self,
-        def: Value<'a>,
+        def: Value<'static>,
         ban_unknown: bool,
     ) -> Result<schema::ScopedSchema<'_, V>, schema::SchemaError> {
         let schema = schema::compile(
@@ -66,7 +66,7 @@ where
     fn add_and_return(
         &mut self,
         id: &url::Url,
-        schema: schema::Schema<'a, V>,
+        schema: schema::Schema<V>,
     ) -> Result<schema::ScopedSchema<V>, schema::SchemaError> {
         let (id_str, fragment) = helpers::serialize_schema_path(id);
 
