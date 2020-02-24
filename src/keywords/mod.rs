@@ -1,34 +1,37 @@
-use std::sync::Arc;
 use std::any;
 use std::fmt;
+use std::sync::Arc;
 
-use simd_json::value::{BorrowedValue as Value};
 use hashbrown::HashMap;
+use simd_json::value::{BorrowedValue as Value, Value as ValueTrait};
 
 use super::schema;
 use super::validators;
 
-pub type KeywordPair = (Vec<&'static str>, Box<dyn Keyword + 'static>);
-pub type KeywordResult = Result<Option<validators::BoxedValidator>, schema::SchemaError>;
-pub type KeywordMap = HashMap<&'static str, Arc<KeywordConsumer>>;
+pub type KeywordPair<V> = (Vec<&'static str>, Box<dyn Keyword<V> + 'static>);
+pub type KeywordResult<V> = Result<Option<validators::BoxedValidator<V>>, schema::SchemaError>;
+pub type KeywordMap<V> = HashMap<&'static str, Arc<KeywordConsumer<V>>>;
 
-pub trait Keyword: Send + Sync + any::Any {
-    fn compile(&self, def: &Value, ctx: &schema::WalkContext) -> KeywordResult;
+pub trait Keyword<V>: Send + Sync + any::Any
+where
+    V: ValueTrait,
+{
+    fn compile(&self, def: &Value, ctx: &schema::WalkContext) -> KeywordResult<V>;
     fn is_exclusive(&self) -> bool {
         false
     }
 }
 
-impl<T: 'static + Send + Sync + any::Any> Keyword for T
+impl<T: 'static + Send + Sync + any::Any, V: ValueTrait> Keyword<V> for T
 where
-    T: Fn(&Value, &schema::WalkContext<'_>) -> KeywordResult,
+    T: Fn(&Value, &schema::WalkContext<'_>) -> KeywordResult<V>,
 {
-    fn compile(&self, def: &Value, ctx: &schema::WalkContext<'_>) -> KeywordResult {
+    fn compile(&self, def: &Value, ctx: &schema::WalkContext<'_>) -> KeywordResult<V> {
         self(def, ctx)
     }
 }
 
-impl fmt::Debug for dyn Keyword + 'static {
+impl<V> fmt::Debug for dyn Keyword<V> + 'static {
     fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
         fmt.write_str("<keyword>")
     }
@@ -48,7 +51,10 @@ macro_rules! keyword_key_exists {
 
 pub mod ref_;
 
-pub fn default() -> KeywordMap {
+pub fn default<V>() -> KeywordMap<V>
+where
+    V: ValueTrait,
+{
     let mut map = HashMap::new();
 
     decouple_keyword((vec!["$ref"], Box::new(ref_::Ref)), &mut map);
@@ -57,12 +63,18 @@ pub fn default() -> KeywordMap {
 }
 
 #[derive(Debug)]
-pub struct KeywordConsumer {
+pub struct KeywordConsumer<V>
+where
+    V: ValueTrait,
+{
     pub keys: Vec<&'static str>,
-    pub keyword: Box<dyn Keyword + 'static>,
+    pub keyword: Box<dyn Keyword<V> + 'static>,
 }
 
-impl KeywordConsumer {
+impl<V> KeywordConsumer<V>
+where
+    V: ValueTrait,
+{
     pub fn consume(&self, set: &mut hashbrown::HashSet<&str>) {
         for key in self.keys.iter() {
             if set.contains(key) {
@@ -72,12 +84,15 @@ impl KeywordConsumer {
     }
 }
 
-pub fn decouple_keyword(keyword_pair: KeywordPair, map: &mut KeywordMap) {
+pub fn decouple_keyword<V>(keyword_pair: KeywordPair<V>, map: &mut KeywordMap<V>)
+where
+    V: ValueTrait,
+{
     let (keys, keyword) = keyword_pair;
 
     let consumer = Arc::new(KeywordConsumer {
         keys: keys.clone(),
-        keyword
+        keyword,
     });
 
     for key in keys.iter() {
