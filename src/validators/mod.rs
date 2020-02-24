@@ -4,9 +4,22 @@ use simd_json::value::Value;
 
 use std::fmt;
 
+macro_rules! nonstrict_process {
+    ($val:expr, $path:ident) => {{
+        let maybe_val = $val;
+        if maybe_val.is_none() {
+            return $crate::validators::ValidationState::new();
+        }
+
+        maybe_val.unwrap();
+    }};
+}
+
 pub use self::ref_::Ref;
 
 pub mod ref_;
+pub mod required;
+
 
 #[derive(Debug)]
 pub struct ValidationState {
