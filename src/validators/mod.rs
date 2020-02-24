@@ -1,6 +1,6 @@
-use simd_json::value::{BorrowedValue as Value};
-use super::scope;
 use super::error;
+use super::scope;
+use simd_json::value::Value;
 
 use std::fmt;
 
@@ -28,15 +28,21 @@ impl ValidationState {
     }
 }
 
-pub trait Validator {
-    fn validate(&self, item: &Value, _: &str, _: &scope::Scope) -> ValidationState;
+pub trait Validator<V>
+where
+    V: Value,
+{
+    fn validate(&self, item: &V, _: &str, _: &scope::Scope<V>) -> ValidationState;
 }
 
-impl fmt::Debug for dyn Validator + 'static + Send + Sync {
+impl<V> fmt::Debug for dyn Validator<V> + 'static + Send + Sync
+where
+    V: Value,
+{
     fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
         fmt.write_str("<validator>")
     }
 }
 
-pub type BoxedValidator = Box<dyn Validator + 'static + Send + Sync>;
-pub type Validators = Vec<BoxedValidator>;
+pub type BoxedValidator<V> = Box<dyn Validator<V> + 'static + Send + Sync>;
+pub type Validators<V> = Vec<BoxedValidator<V>>;

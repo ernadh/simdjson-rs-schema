@@ -1,7 +1,7 @@
 use phf;
 use simd_json::value::{BorrowedValue as Value, Value as ValueTrait};
-use url;
 use std::error::Error;
+use url;
 
 use std::fmt;
 use std::fmt::{Display, Formatter};
@@ -9,32 +9,44 @@ use std::fmt::{Display, Formatter};
 use std::collections;
 
 use super::helpers;
+use super::keywords;
 use super::scope;
 use super::validators;
-use super::keywords;
 
 #[derive(Debug)]
-pub struct Schema<'a> {
+pub struct Schema<'a, V>
+where
+    V: ValueTrait,
+{
     pub id: Option<url::Url>,
     schema: Option<url::Url>,
     original: Value<'a>,
-    tree: collections::BTreeMap<String, Schema<'a>>,
-    validators: validators::Validators,
+    tree: collections::BTreeMap<String, Schema<'a, V>>,
+    validators: validators::Validators<V>,
     scopes: hashbrown::HashMap<String, Vec<String>>,
 }
 
 include!(concat!(env!("OUT_DIR"), "/codegen.rs"));
 
-pub struct CompilationSettings<'a> {
-    pub keywords: &'a keywords::KeywordMap,
+pub struct CompilationSettings<'a, V>
+where
+    V: ValueTrait,
+{
+    pub keywords: &'a keywords::KeywordMap<V>,
     pub ban_unknown_keywords: bool,
 }
 
-impl<'a> CompilationSettings<'a> {
-    pub fn new(keywords: &'a keywords::KeywordMap, ban_unknown_keywords: bool) -> CompilationSettings<'a> {
+impl<'a, V> CompilationSettings<'a, V>
+where
+    V: ValueTrait,
+{
+    pub fn new(
+        keywords: &'a keywords::KeywordMap<V>,
+        ban_unknown_keywords: bool,
+    ) -> CompilationSettings<'a, V> {
         CompilationSettings {
             keywords,
-            ban_unknown_keywords
+            ban_unknown_keywords,
         }
     }
 }
@@ -87,27 +99,41 @@ impl Display for SchemaError {
 impl Error for SchemaError {}
 
 #[derive(Debug)]
-pub struct ScopedSchema<'a> {
-    scope: &'a scope::Scope<'a>,
-    schema: &'a Schema<'a>,
+pub struct ScopedSchema<'a, V>
+where
+    V: ValueTrait,
+{
+    scope: &'a scope::Scope<'a, V>,
+    schema: &'a Schema<'a, V>,
 }
 
-impl<'a> ScopedSchema<'a> {
-    pub fn new(scope: &'a scope::Scope, schema: &'a Schema) -> ScopedSchema<'a> {
+impl<'a, V> ScopedSchema<'a, V>
+where
+    V: ValueTrait,
+{
+    pub fn new(scope: &'a scope::Scope<V>, schema: &'a Schema<V>) -> ScopedSchema<'a, V> {
         ScopedSchema { scope, schema }
     }
 
-    pub fn validate(&self, data: &Value) -> validators::ValidationState {
+    pub fn validate(&self, data: &V) -> validators::ValidationState {
         self.schema.validate_in_scope(data, "", self.scope)
     }
 
-    pub fn validate_in(&self, data: &Value, path: &str) -> validators::ValidationState {
+    pub fn validate_in(&self, data: &V, path: &str) -> validators::ValidationState {
         self.schema.validate_in_scope(data, path, self.scope)
     }
 }
 
-impl<'a> Schema<'a> {
-    fn validate_in_scope(&self, data: &Value, path: &str, scope: &scope::Scope) -> validators::ValidationState {
+impl<'a, V> Schema<'a, V>
+where
+    V: ValueTrait,
+{
+    fn validate_in_scope(
+        &self,
+        data: &V,
+        path: &str,
+        scope: &scope::Scope<V>,
+    ) -> validators::ValidationState {
         let mut state = validators::ValidationState::new();
 
         for validator in self.validators.iter() {
@@ -117,7 +143,7 @@ impl<'a> Schema<'a> {
         state
     }
 
-    pub fn resolve(&self, id: &str) -> Option<&Schema> {
+    pub fn resolve(&self, id: &str) -> Option<&Schema<V>> {
         let path = self.scopes.get(id);
         path.map(|path| {
             let mut schema = self;
@@ -128,7 +154,7 @@ impl<'a> Schema<'a> {
         })
     }
 
-    pub fn resolve_fragment(&self, fragment: &str) -> Option<&Schema> {
+    pub fn resolve_fragment(&self, fragment: &str) -> Option<&Schema<V>> {
         assert!(fragment.starts_with('/'), "Can't resolve id fragments");
 
         let parts = fragment[1..].split('/');
@@ -146,8 +172,8 @@ impl<'a> Schema<'a> {
     fn compile(
         def: Value<'a>,
         external_id: Option<url::Url>,
-        settings: CompilationSettings<'_>,
-    ) -> Result<Schema<'a>, SchemaError> {
+        settings: CompilationSettings<'_, V>,
+    ) -> Result<Schema<'a, V>, SchemaError> {
         let def = helpers::convert_boolean_schema(def);
 
         if !def.is_object() {
@@ -222,8 +248,8 @@ impl<'a> Schema<'a> {
     fn compile_keywords(
         def: &Value<'a>,
         context: &WalkContext<'_>,
-        settings: &CompilationSettings<'_>,
-    ) -> Result<validators::Validators, SchemaError> {
+        settings: &CompilationSettings<'_, V>,
+    ) -> Result<validators::Validators<V>, SchemaError> {
         let mut validators = vec![];
         let mut keys: hashbrown::HashSet<&str> = def
             .as_object()
@@ -280,9 +306,9 @@ impl<'a> Schema<'a> {
     fn compile_sub(
         def: Value<'a>,
         context: &mut WalkContext<'_>,
-        keywords: &CompilationSettings<'_>,
+        keywords: &CompilationSettings<'_, V>,
         is_schema: bool,
-    ) -> Result<Schema<'a>, SchemaError> {
+    ) -> Result<Schema<'a, V>, SchemaError> {
         let def = helpers::convert_boolean_schema(def);
 
         let id = if is_schema {
@@ -387,6 +413,13 @@ impl<'a> Schema<'a> {
     }
 }
 
-pub fn compile<'a>(def: Value<'a>, external_id: Option<url::Url>, settings: CompilationSettings<'_>) -> Result<Schema<'a>, SchemaError> {
+pub fn compile<'a, V>(
+    def: Value<'a>,
+    external_id: Option<url::Url>,
+    settings: CompilationSettings<'_, V>,
+) -> Result<Schema<'a, V>, SchemaError>
+where
+    V: ValueTrait,
+{
     Schema::compile(def, external_id, settings)
 }

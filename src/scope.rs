@@ -6,22 +6,28 @@ use simd_json::value::{BorrowedValue as Value, Value as ValueTrait};
 use super::helpers;
 
 #[derive(Debug)]
-pub struct Scope<'a> {
-    keywords: keywords::KeywordMap,
-    schemes: HashMap<String, schema::Schema<'a>>
+pub struct Scope<'a, V>
+where
+    V: ValueTrait,
+{
+    keywords: keywords::KeywordMap<V>,
+    schemes: HashMap<String, schema::Schema<'a, V>>,
 }
 
-impl<'a> Scope<'a> {
-    pub fn new() -> Scope<'a> {
+impl<'a, V> Scope<'a, V>
+where
+    V: ValueTrait,
+{
+    pub fn new() -> Scope<'a, V> {
         let mut scope = Scope {
             keywords: keywords::default(),
-            schemes: HashMap::new()
+            schemes: HashMap::new(),
         };
 
         scope
     }
 
-    pub fn resolve(&'a self, id: &url::Url) -> Option<schema::ScopedSchema<'a>> {
+    pub fn resolve(&'a self, id: &url::Url) -> Option<schema::ScopedSchema<'a, V>> {
         let (schema_path, fragment) = helpers::serialize_schema_path(id);
 
         let schema = self.schemes.get(&schema_path).or_else(|| {
@@ -43,8 +49,11 @@ impl<'a> Scope<'a> {
         })
     }
 
-
-    pub fn compile_and_return(&'_ mut self, def: Value<'a>, ban_unknown: bool) -> Result<schema::ScopedSchema<'_>, schema::SchemaError> {
+    pub fn compile_and_return(
+        &'_ mut self,
+        def: Value<'a>,
+        ban_unknown: bool,
+    ) -> Result<schema::ScopedSchema<'_, V>, schema::SchemaError> {
         let schema = schema::compile(
             def,
             None,
@@ -57,8 +66,8 @@ impl<'a> Scope<'a> {
     fn add_and_return(
         &mut self,
         id: &url::Url,
-        schema: schema::Schema<'a>,
-    ) -> Result<schema::ScopedSchema, schema::SchemaError> {
+        schema: schema::Schema<'a, V>,
+    ) -> Result<schema::ScopedSchema<V>, schema::SchemaError> {
         let (id_str, fragment) = helpers::serialize_schema_path(id);
 
         if fragment.is_some() {
@@ -72,6 +81,4 @@ impl<'a> Scope<'a> {
             Err(schema::SchemaError::IdConflicts)
         }
     }
-
-
 }

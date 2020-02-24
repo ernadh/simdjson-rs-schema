@@ -6,8 +6,11 @@ use super::validators;
 
 pub struct Ref;
 
-impl super::Keyword for Ref {
-    fn compile(&self, def: &Value, ctx: &schema::WalkContext<'_>) -> super::KeywordResult {
+impl<V> super::Keyword<V> for Ref
+where
+    V: ValueTrait,
+{
+    fn compile(&self, def: &Value, ctx: &schema::WalkContext<'_>) -> super::KeywordResult<V> {
         let ref_ = keyword_key_exists!(def, "$ref");
 
         if ref_.is_str() {
@@ -20,7 +23,6 @@ impl super::Keyword for Ref {
                     path: ctx.fragment.join("/"),
                     detail: "The value of $ref MUST be an URI-encoded JSON Pointer".to_string(),
                 }),
-
             }
         } else {
             Err(schema::SchemaError::Malformed {
@@ -30,4 +32,3 @@ impl super::Keyword for Ref {
         }
     }
 }
-
