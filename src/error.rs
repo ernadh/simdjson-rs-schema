@@ -123,7 +123,8 @@ macro_rules! impl_serialize {
                 if let Some(ref detail) = self.get_detail() {
                     map.insert("detail".to_string(), to_value(detail.as_bytes_mut()).unwrap());
                 }
-                Value::Object(Box::new(map.as_str().unwrap().as_bytes_mut())).serialize(serializer)
+                //Value::Object(Box::new(map.as_str().unwrap().as_bytes_mut())).serialize(serializer)
+                Value::Object(Box::new(*map.as_object().unwrap())).serialize(serializer)
             }
         }
     };

@@ -467,6 +467,7 @@ dependencies = [
  "hashbrown 0.7.0",
  "phf",
  "phf_codegen",
+ "serde",
  "simd-json",
  "url",
  "uuid",

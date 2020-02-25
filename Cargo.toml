@@ -11,6 +11,7 @@ url = { version = "1" }
 hashbrown = { version = "0.7" }
 uuid = {version = "0.8", features = ["v4"]}
 phf = "0.7"
+serde = "1.0"
 
 [build-dependencies.phf_codegen]
 version = "0.7"
