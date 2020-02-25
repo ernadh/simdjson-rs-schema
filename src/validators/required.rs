@@ -1,4 +1,4 @@
-use simd_json::value::{BorrowedValue as Value, Value as ValueTrait};
+use simd_json::value::{BorrowedValue as Value, Value as ValueTrait, to_borrowed_value as to_value};
 
 use super::scope;
 use super::error;
@@ -12,10 +12,11 @@ where
     V: ValueTrait,
 {
     fn validate(&self, val: &V, path: &str, _scope: &scope::Scope<V>) -> super::ValidationState {
-        let object = nonstrict_process!(val.as_object(), path);
+        let object = val.as_object().unwrap();
         let mut state = super::ValidationState::new();
 
         for key in self.items.iter() {
+            let k = to_value(key.as_bytes_mut());
             if !object.contains_key(key) {
                 state.errors.push(Box::new(error::Required {
                     path: [path, key.as_ref()].join("/"),
