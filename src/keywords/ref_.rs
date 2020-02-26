@@ -9,6 +9,7 @@ pub struct Ref;
 impl<V> super::Keyword<V> for Ref
 where
     V: ValueTrait,
+    <V as ValueTrait>::Key: std::borrow::Borrow<String> + std::hash::Hash + Eq,
 {
     fn compile(&self, def: &Value, ctx: &schema::WalkContext<'_>) -> super::KeywordResult<V> {
         let ref_ = keyword_key_exists!(def, "$ref");

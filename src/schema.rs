@@ -137,6 +137,7 @@ where
         let mut state = validators::ValidationState::new();
 
         for validator in self.validators.iter() {
+            println!("ANOTHER VALIDATOR");
             state.append(validator.validate(data, path, scope))
         }
 

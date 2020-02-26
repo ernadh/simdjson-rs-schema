@@ -1,7 +1,7 @@
 use std::error::Error;
 use std::fmt::Debug;
 use std::any::{Any, TypeId};
-use simd_json::{to_borrowed_value as to_value, BorrowedValue as Value, Value as ValueTrait, MutableValue, ValueBuilder};
+use simd_json::{BorrowedValue as Value, MutableValue, ValueBuilder};
 use serde::{Serialize, Serializer};
 
 pub trait GetTypeId: Any {
@@ -51,7 +51,8 @@ macro_rules! impl_basic_err {
 
         impl ::std::fmt::Display for $err {
             fn fmt(&self, formatter: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
-                self.description().fmt(formatter)
+                //self.description().fmt(formatter)
+                std::fmt::Display::fmt(&self.description(), formatter)
             }
         }
     };
@@ -117,32 +118,35 @@ macro_rules! impl_serialize {
         impl Serialize for $err {
             fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error> where S: Serializer {
                 let mut map = Value::object();
-                map.insert("code".to_string(), to_value(self.get_code().as_bytes_mut()).unwrap());
-                map.insert("title".to_string(), to_value(self.get_title().as_bytes_mut()).unwrap());
-                map.insert("path".to_string(), to_value(self.get_path().as_bytes_mut()).unwrap());
-                if let Some(ref detail) = self.get_detail() {
-                    map.insert("detail".to_string(), to_value(detail.as_bytes_mut()).unwrap());
+                map.insert("code".to_string(), self.get_code()).unwrap();
+                map.insert("title".to_string(), self.get_title()).unwrap();
+                map.insert("path".to_string(), self.get_path()).unwrap();
+
+                if let Some(detail) = self.get_detail() {
+                    map.insert("detail".to_string(), detail).unwrap();
                 }
-                //Value::Object(Box::new(map.as_str().unwrap().as_bytes_mut())).serialize(serializer)
-                Value::Object(Box::new(*map.as_object().unwrap())).serialize(serializer)
+
+                return map.serialize(serializer);
             }
         }
     };
     ($err:ty, $($sp:expr),+) => {
         impl Serialize for $err {
             fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error> where S: Serializer {
-                let mut map = simd_json::Value::map();
-                map.insert("code".to_string(), to_value(self.get_code()).unwrap());
-                map.insert("title".to_string(), to_value(self.get_title()).unwrap());
-                map.insert("path".to_string(), to_value(self.get_path()).unwrap());
-                if let Some(ref detail) = self.get_detail() {
-                    map.insert("detail".to_string(), to_value(detail).unwrap());
+                let mut map = Value::map();
+                map.insert("code".to_string(), self.get_code()).unwrap();
+                map.insert("title".to_string(), self.get_title()).unwrap();
+                map.insert("path".to_string(), self.get_path()).unwrap();
+
+                if let Some(detail) = self.get_detail() {
+                    map.insert("detail".to_string(), detail);
                 }
+
                 $({
                     let closure = $sp;
                     closure(self, &mut map);
                 })+
-                Value::Object(map).serialize(serializer)
+                map.serialize(serializer);
             }
         }
     }

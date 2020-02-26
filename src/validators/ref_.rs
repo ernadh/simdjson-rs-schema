@@ -1,4 +1,4 @@
-use simd_json::value::{BorrowedValue as Value, Value as ValueTrait};
+use simd_json::value::{Value as ValueTrait};
 
 use super::scope;
 
@@ -9,6 +9,7 @@ pub struct Ref {
 impl<V> super::Validator<V> for Ref
 where
     V: ValueTrait,
+    <V as ValueTrait>::Key: std::borrow::Borrow<String> + std::hash::Hash + Eq,
 {
     fn validate(&self, val: &V, path: &str, scope: &scope::Scope<V>) -> super::ValidationState {
         let schema = scope.resolve(&self.url);

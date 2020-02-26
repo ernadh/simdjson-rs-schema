@@ -17,12 +17,31 @@ where
 impl<'a, V> Scope<V>
 where
     V: ValueTrait,
+    <V as ValueTrait>::Key: std::borrow::Borrow<String> + std::hash::Hash + Eq,
 {
     pub fn new() -> Scope<V> {
         let scope = Scope {
             keywords: keywords::default(),
             schemes: HashMap::new(),
         };
+
+        scope.add_keyword(vec!["format"], keywords::format::Format::new());
+        scope
+    }
+
+    pub fn with_formats<F>(build_formats: F) -> Scope<V>
+    where
+        F: FnOnce(&mut keywords::format::FormatBuilders<V>),
+    {
+        let mut scope = Scope {
+            keywords: keywords::default(),
+            schemes: hashbrown::HashMap::new(),
+        };
+
+        scope.add_keyword(
+            vec!["format"],
+            keywords::format::Format::with(build_formats),
+        );
 
         scope
     }
@@ -54,6 +73,7 @@ where
         def: Value<'static>,
         ban_unknown: bool,
     ) -> Result<schema::ScopedSchema<'_, V>, schema::SchemaError> {
+        println!("IN  COMPILE AND RETURN");
         let schema = schema::compile(
             def,
             None,
@@ -75,6 +95,7 @@ where
         }
 
         if !self.schemes.contains_key(&id_str) {
+            println!("schema {} not present so we are adding it", id_str);
             self.schemes.insert(id_str.clone(), schema);
             Ok(schema::ScopedSchema::new(self, &self.schemes[&id_str]))
         } else {

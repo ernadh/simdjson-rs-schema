@@ -50,10 +50,13 @@ macro_rules! keyword_key_exists {
 }
 
 pub mod ref_;
+pub mod required;
+pub mod format;
 
 pub fn default<V>() -> KeywordMap<V>
 where
     V: ValueTrait,
+    <V as ValueTrait>::Key: std::borrow::Borrow<String> + std::hash::Hash + Eq,
 {
     let mut map = HashMap::new();
 

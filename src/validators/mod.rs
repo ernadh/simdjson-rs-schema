@@ -4,6 +4,7 @@ use simd_json::value::Value;
 
 use std::fmt;
 
+/*
 macro_rules! nonstrict_process {
     ($val:expr, $path:ident) => {{
         let maybe_val = $val;
@@ -14,11 +15,14 @@ macro_rules! nonstrict_process {
         maybe_val.unwrap();
     }};
 }
+*/
 
 pub use self::ref_::Ref;
+pub use self::required::Required;
 
 pub mod ref_;
 pub mod required;
+pub mod formats;
 
 
 #[derive(Debug)]
