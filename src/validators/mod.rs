@@ -17,6 +17,15 @@ macro_rules! nonstrict_process {
 }
 */
 
+macro_rules! val_error {
+    ($err:expr) => {
+        $crate::validators::ValidationState {
+            errors: vec![Box::new($err)],
+            missing: vec![],
+        }
+    };
+}
+
 pub use self::ref_::Ref;
 pub use self::required::Required;
 
@@ -45,15 +54,15 @@ impl ValidationState {
     }
 }
 
-pub trait Validator<V>
+pub trait Validator<'key, V>
 where
     V: ValueTrait,
-    <V as ValueTrait>::Key: std::borrow::Borrow<String> + std::hash::Hash + Eq,
+    <V as ValueTrait>::Key: std::borrow::Borrow<&'key str> + std::hash::Hash + Eq,
 {
-    fn validate(&self, item: &V, _: &str, _: &scope::Scope<V>) -> ValidationState;
+    fn validate(&self, item: &V, _: &str, _: &scope::Scope<'key, V>) -> ValidationState;
 }
 
-impl<V> fmt::Debug for dyn Validator<V> + 'static + Send + Sync
+impl<'key, V> fmt::Debug for dyn Validator<'key, V> + 'static + Send + Sync
 where
     V: ValueTrait,
 {
@@ -62,5 +71,5 @@ where
     }
 }
 
-pub type BoxedValidator<V> = Box<dyn Validator<V> + 'static + Send + Sync>;
-pub type Validators<V> = Vec<BoxedValidator<V>>;
+pub type BoxedValidator<'key, V> = Box<dyn Validator<'key, V> + 'static + Send + Sync>;
+pub type Validators<'key, V> = Vec<BoxedValidator<'key, V>>;

@@ -158,3 +158,11 @@ pub struct Required {
 }
 impl_err!(Required, "required", "This property is required");
 impl_serialize!(Required);
+
+#[derive(Debug)]
+pub struct Format {
+    pub path: String,
+    pub detail: String,
+}
+impl_err!(Format, "format", "Format is wrong", +detail);
+impl_serialize!(Format);

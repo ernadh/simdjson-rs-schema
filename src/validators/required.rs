@@ -7,12 +7,13 @@ pub struct Required {
     pub items: Vec<String>,
 }
 
-impl<V> super::Validator<V> for Required
+impl<'key, V> super::Validator<'key, V> for Required
 where
     V: ValueTrait,
+    <V as ValueTrait>::Key: std::borrow::Borrow<&'key str> + std::hash::Hash + Eq,
     <V as ValueTrait>::Key: std::borrow::Borrow<String> + std::hash::Hash + Eq,
 {
-    fn validate(&self, val: &V, path: &str, _scope: &scope::Scope<V>) -> super::ValidationState {
+    fn validate(&self, val: &V, path: &str, _scope: &scope::Scope<'key, V>) -> super::ValidationState {
         println!("IN VALIDATE for required");
         let mut state = super::ValidationState::new();
 

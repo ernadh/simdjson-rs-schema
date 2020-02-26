@@ -4,7 +4,7 @@ use super::schema;
 use super::validators;
 
 pub struct Required;
-impl<V> super::Keyword<V> for Required
+impl<'key, V> super::Keyword<'key, V> for Required
 where
     V: ValueTrait,
     <V as ValueTrait>::Key: std::borrow::Borrow<String> + std::hash::Hash + Eq,

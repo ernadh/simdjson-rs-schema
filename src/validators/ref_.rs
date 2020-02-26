@@ -6,12 +6,12 @@ pub struct Ref {
     pub url: url::Url,
 }
 
-impl<V: 'static> super::Validator<V> for Ref
+impl<'key, V: 'key> super::Validator<'key, V> for Ref
 where
     V: ValueTrait,
-    <V as ValueTrait>::Key: std::borrow::Borrow<String> + std::hash::Hash + Eq,
+    <V as ValueTrait>::Key: std::borrow::Borrow<&'key str> + std::hash::Hash + Eq,
 {
-    fn validate(&self, val: &V, path: &str, scope: &scope::Scope<V>) -> super::ValidationState {
+    fn validate(&self, val: &V, path: &str, scope: &scope::Scope<'key, V>) -> super::ValidationState {
         let schema = scope.resolve(&self.url);
 
         if schema.is_some() {

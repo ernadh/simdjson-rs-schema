@@ -2,35 +2,39 @@ use super::keywords;
 use super::schema;
 use hashbrown::HashMap;
 use simd_json::value::{BorrowedValue as Value, Value as ValueTrait};
+use std::marker::PhantomData;
+
 
 use super::helpers;
 
 #[derive(Debug)]
-pub struct Scope<V>
+pub struct Scope<'key, V>
 where
     V: ValueTrait,
-    <V as ValueTrait>::Key: std::borrow::Borrow<String> + std::hash::Hash + Eq,
+    <V as ValueTrait>::Key: std::borrow::Borrow<&'key str> + std::hash::Hash + Eq,
 {
-    keywords: keywords::KeywordMap<V>,
-    schemes: HashMap<String, schema::Schema<V>>,
+    keywords: keywords::KeywordMap<'key, V>,
+    schemes: HashMap<String, schema::Schema<'key, V>>,
+    phantom: PhantomData<&'key V>,
 }
 
-impl<'a, V: 'static> Scope<V>
+impl<'key, 'validator, V: 'static> Scope<'key, V>
 where
     V: ValueTrait,
-    <V as ValueTrait>::Key: std::borrow::Borrow<String> + std::hash::Hash + Eq,
+    <V as ValueTrait>::Key: std::borrow::Borrow<&'key str> + std::hash::Hash + Eq,
 {
-    pub fn new() -> Scope<V> {
-        let scope = Scope {
+    pub fn new() -> Scope<'key, V> {
+        let mut scope = Scope {
             keywords: keywords::default(),
             schemes: HashMap::new(),
+            phantom: PhantomData,
         };
 
         scope.add_keyword(vec!["format"], keywords::format::Format::new());
         scope
     }
 
-    pub fn with_formats<F>(build_formats: F) -> Scope<V>
+    pub fn with_formats<F>(build_formats: F) -> Scope<'key, V>
     where
         V: ValueTrait,
         F: FnOnce(&mut keywords::format::FormatBuilders<V>),
@@ -38,6 +42,7 @@ where
         let mut scope = Scope {
             keywords: keywords::default(),
             schemes: hashbrown::HashMap::new(),
+            phantom: PhantomData,
         };
 
         scope.add_keyword(
@@ -48,7 +53,8 @@ where
         scope
     }
 
-    pub fn resolve(&'a self, id: &url::Url) -> Option<schema::ScopedSchema<'a, V>> {
+    pub fn resolve(&'key self, id: &url::Url) -> Option<schema::ScopedSchema<'key, V>>
+    {
         let (schema_path, fragment) = helpers::serialize_schema_path(id);
 
         let schema = self.schemes.get(&schema_path).or_else(|| {
@@ -74,7 +80,7 @@ where
         &'_ mut self,
         def: Value<'static>,
         ban_unknown: bool,
-    ) -> Result<schema::ScopedSchema<'_, V>, schema::SchemaError> {
+    ) -> Result<schema::ScopedSchema<'key, V>, schema::SchemaError> {
         println!("IN  COMPILE AND RETURN");
         let schema = schema::compile(
             def,
@@ -88,8 +94,8 @@ where
     fn add_and_return(
         &mut self,
         id: &url::Url,
-        schema: schema::Schema<V>,
-    ) -> Result<schema::ScopedSchema<V>, schema::SchemaError> {
+        schema: schema::Schema<'key, V>,
+    ) -> Result<schema::ScopedSchema<'key, V>, schema::SchemaError> {
         let (id_str, fragment) = helpers::serialize_schema_path(id);
 
         if fragment.is_some() {
@@ -107,8 +113,7 @@ where
 
     pub fn add_keyword<T>(&mut self, keys: Vec<&'static str>, keyword: T)
     where
-        //V: ValueTrait,
-        T: keywords::Keyword<V> + 'static,
+        T: keywords::Keyword<'key, V> + 'static,
     {
         keywords::decouple_keyword((keys, Box::new(keyword)), &mut self.keywords);
     }

@@ -4,12 +4,12 @@ use hashbrown::HashMap;
 use super::schema;
 use super::validators;
 
-pub type FormatBuilders<V> = HashMap<String, Box<dyn super::Keyword<V> + 'static + Send + Sync>>;
+pub type FormatBuilders<'key, V> = HashMap<String, Box<dyn super::Keyword<'key, V> + 'static + Send + Sync>>;
 
-fn default_formats<V>() -> FormatBuilders<V> 
+fn default_formats<'key, V>() -> FormatBuilders<'key, V> 
 where
     V: ValueTrait,
-    <V as ValueTrait>::Key: std::borrow::Borrow<String> + std::hash::Hash + Eq,
+    <V as ValueTrait>::Key: std::borrow::Borrow<&'key str> + std::hash::Hash + Eq,
 {
     let mut map: FormatBuilders<V> = HashMap::new();
 
@@ -23,22 +23,22 @@ where
     map
 }
 
-pub struct Format<V> {
-    pub formats: FormatBuilders<V>,
+pub struct Format<'key, V> {
+    pub formats: FormatBuilders<'key, V>,
 }
 
-impl<V> Format<V>
+impl<'key, V> Format<'key, V>
 where
     V: ValueTrait,
-    <V as ValueTrait>::Key: std::borrow::Borrow<String> + std::hash::Hash + Eq,
+    <V as ValueTrait>::Key: std::borrow::Borrow<&'key str> + std::hash::Hash + Eq,
 {
-    pub fn new() -> Format<V> {
+    pub fn new() -> Format<'key, V> {
         Format {
             formats: default_formats(),
         }
     }
 
-    pub fn with<F>(build_formats: F) -> Format<V>
+    pub fn with<F>(build_formats: F) -> Format<'key, V>
     where
         F: FnOnce(&mut FormatBuilders<V>),
     {
@@ -48,15 +48,15 @@ where
     }
 }
 
-impl<V: 'static> super::Keyword<V> for Format<V>
+impl<'key, V> super::Keyword<'key, V> for Format<'key, V>
 where
     V: ValueTrait,
-    <V as ValueTrait>::Key: std::borrow::Borrow<String> + std::hash::Hash + Eq,
+    <V as ValueTrait>::Key: std::borrow::Borrow<&'key str> + std::hash::Hash + Eq,
 {
-    fn compile(&self, def: &Value, ctx: &schema::WalkContext<'_>) -> super::KeywordResult<V> {
+    fn compile(&self, def: &Value, ctx: &schema::WalkContext<'_>) -> super::KeywordResult<'key, V> {
         let format = keyword_key_exists!(def, "format");
 
-        if format.is_string() {
+        if format.as_str().is_some() {
             let format = format.as_str().unwrap();
             match self.formats.get(format) {
                 Some(keyword) => keyword.compile(def, ctx),

@@ -7,6 +7,7 @@ use std::fmt;
 use std::fmt::{Display, Formatter};
 
 use std::collections;
+use std::marker::PhantomData;
 
 use super::helpers;
 use super::keywords;
@@ -14,39 +15,40 @@ use super::scope;
 use super::validators;
 
 #[derive(Debug)]
-pub struct Schema<V>
+pub struct Schema<'key, V>
 where
     V: ValueTrait,
-    <V as ValueTrait>::Key: std::borrow::Borrow<String> + std::hash::Hash + Eq,
+    <V as ValueTrait>::Key: std::borrow::Borrow<&'key str> + std::hash::Hash + Eq,
 {
     pub id: Option<url::Url>,
     schema: Option<url::Url>,
     original: Value<'static>,
-    tree: collections::BTreeMap<String, Schema<V>>,
-    validators: validators::Validators<V>,
+    tree: collections::BTreeMap<String, Schema<'key, V>>,
+    validators: validators::Validators<'key, V>,
     scopes: hashbrown::HashMap<String, Vec<String>>,
+    phantom: PhantomData<&'key V>,
 }
 
 include!(concat!(env!("OUT_DIR"), "/codegen.rs"));
 
-pub struct CompilationSettings<'a, V>
+pub struct CompilationSettings<'key, V>
 where
     V: ValueTrait,
-    <V as ValueTrait>::Key: std::borrow::Borrow<String> + std::hash::Hash + Eq,
+    <V as ValueTrait>::Key: std::borrow::Borrow<&'key str> + std::hash::Hash + Eq,
 {
-    pub keywords: &'a keywords::KeywordMap<V>,
+    pub keywords: &'key keywords::KeywordMap<'key, V>,
     pub ban_unknown_keywords: bool,
 }
 
-impl<'a, V> CompilationSettings<'a, V>
+impl<'key, V> CompilationSettings<'key, V>
 where
     V: ValueTrait,
-    <V as ValueTrait>::Key: std::borrow::Borrow<String> + std::hash::Hash + Eq,
+    <V as ValueTrait>::Key: std::borrow::Borrow<&'key str> + std::hash::Hash + Eq,
 {
     pub fn new(
-        keywords: &'a keywords::KeywordMap<V>,
+        keywords: &'key keywords::KeywordMap<V>,
         ban_unknown_keywords: bool,
-    ) -> CompilationSettings<'a, V> {
+    ) -> CompilationSettings<'key, V> {
         CompilationSettings {
             keywords,
             ban_unknown_keywords,
@@ -74,6 +76,7 @@ impl<'a> WalkContext<'a> {
 }
 
 #[derive(Debug)]
+#[allow(missing_copy_implementations)]
 pub enum SchemaError {
     WrongId,
     IdConflicts,
@@ -102,21 +105,21 @@ impl Display for SchemaError {
 impl Error for SchemaError {}
 
 #[derive(Debug)]
-pub struct ScopedSchema<'a, V>
+pub struct ScopedSchema<'key, V>
 where
     V: ValueTrait,
-    <V as ValueTrait>::Key: std::borrow::Borrow<String> + std::hash::Hash + Eq,
+    <V as ValueTrait>::Key: std::borrow::Borrow<&'key str> + std::hash::Hash + Eq,
 {
-    scope: &'a scope::Scope<V>,
-    schema: &'a Schema<V>,
+    scope: &'key scope::Scope<'key, V>,
+    schema: &'key Schema<'key, V>,
 }
 
-impl<'a, V> ScopedSchema<'a, V>
+impl<'key, V> ScopedSchema<'key, V>
 where
     V: ValueTrait,
-    <V as ValueTrait>::Key: std::borrow::Borrow<String> + std::hash::Hash + Eq,
+    <V as ValueTrait>::Key: std::borrow::Borrow<&'key str> + std::hash::Hash + Eq,
 {
-    pub fn new(scope: &'a scope::Scope<V>, schema: &'a Schema<V>) -> ScopedSchema<'a, V> {
+    pub fn new(scope: &'key scope::Scope<'key, V>, schema: &'key Schema<'key, V>) -> ScopedSchema<'key, V> {
         ScopedSchema { scope, schema }
     }
 
@@ -129,16 +132,16 @@ where
     }
 }
 
-impl<'a, V> Schema<V>
+impl<'key, V> Schema<'key, V>
 where
     V: ValueTrait,
-    <V as ValueTrait>::Key: std::borrow::Borrow<String> + std::hash::Hash + Eq,
+    <V as ValueTrait>::Key: std::borrow::Borrow<&'key str> + std::hash::Hash + Eq,
 {
     fn validate_in_scope(
         &self,
         data: &V,
         path: &str,
-        scope: &scope::Scope<V>,
+        scope: &scope::Scope<'key, V>,
     ) -> validators::ValidationState {
         let mut state = validators::ValidationState::new();
 
@@ -150,7 +153,7 @@ where
         state
     }
 
-    pub fn resolve(&self, id: &str) -> Option<&Schema<V>> {
+    pub fn resolve(&self, id: &str) -> Option<&Schema<'key, V>> {
         let path = self.scopes.get(id);
         path.map(|path| {
             let mut schema = self;
@@ -161,7 +164,7 @@ where
         })
     }
 
-    pub fn resolve_fragment(&self, fragment: &str) -> Option<&Schema<V>> {
+    pub fn resolve_fragment(&self, fragment: &str) -> Option<&Schema<'key, V>> {
         assert!(fragment.starts_with('/'), "Can't resolve id fragments");
 
         let parts = fragment[1..].split('/');
@@ -179,8 +182,8 @@ where
     fn compile(
         def: Value<'static>,
         external_id: Option<url::Url>,
-        settings: CompilationSettings<'_, V>,
-    ) -> Result<Schema<V>, SchemaError> {
+        settings: CompilationSettings<'key, V>,
+    ) -> Result<Schema<'key, V>, SchemaError> {
         let def = helpers::convert_boolean_schema(def);
 
         if !def.is_object() {
@@ -247,16 +250,17 @@ where
             tree,
             validators,
             scopes,
+            phantom: PhantomData,
         };
 
         Ok(schema)
     }
 
     fn compile_keywords(
-        def: &Value<'a>,
+        def: &'key Value<'key>,
         context: &WalkContext<'_>,
-        settings: &CompilationSettings<'_, V>,
-    ) -> Result<validators::Validators<V>, SchemaError> {
+        settings: &CompilationSettings<'key, V>,
+    ) -> Result<validators::Validators<'key, V>, SchemaError> {
         let mut validators = vec![];
         let mut keys: hashbrown::HashSet<&str> = def
             .as_object()
@@ -313,9 +317,9 @@ where
     fn compile_sub(
         def: Value<'static>,
         context: &mut WalkContext<'_>,
-        keywords: &CompilationSettings<'_, V>,
+        keywords: &CompilationSettings<'key, V>,
         is_schema: bool,
-    ) -> Result<Schema<V>, SchemaError> {
+    ) -> Result<Schema<'key, V>, SchemaError> {
         let def = helpers::convert_boolean_schema(def);
 
         let id = if is_schema {
@@ -414,20 +418,21 @@ where
             tree,
             validators,
             scopes: hashbrown::HashMap::new(),
+            phantom: PhantomData,
         };
 
         Ok(schema)
     }
 }
 
-pub fn compile<'a, V>(
+pub fn compile<'key, V>(
     def: Value<'static>,
     external_id: Option<url::Url>,
-    settings: CompilationSettings<'_, V>,
-) -> Result<Schema<V>, SchemaError>
+    settings: CompilationSettings<'key, V>,
+) -> Result<Schema<'key, V>, SchemaError>
 where
     V: ValueTrait,
-    <V as ValueTrait>::Key: std::borrow::Borrow<String> + std::hash::Hash + Eq,
+    <V as ValueTrait>::Key: std::borrow::Borrow<&'key str> + std::hash::Hash + Eq,
 {
     Schema::compile(def, external_id, settings)
 }
