@@ -17,6 +17,7 @@ use super::validators;
 pub struct Schema<V>
 where
     V: ValueTrait,
+    <V as ValueTrait>::Key: std::borrow::Borrow<String> + std::hash::Hash + Eq,
 {
     pub id: Option<url::Url>,
     schema: Option<url::Url>,
@@ -31,6 +32,7 @@ include!(concat!(env!("OUT_DIR"), "/codegen.rs"));
 pub struct CompilationSettings<'a, V>
 where
     V: ValueTrait,
+    <V as ValueTrait>::Key: std::borrow::Borrow<String> + std::hash::Hash + Eq,
 {
     pub keywords: &'a keywords::KeywordMap<V>,
     pub ban_unknown_keywords: bool,
@@ -39,6 +41,7 @@ where
 impl<'a, V> CompilationSettings<'a, V>
 where
     V: ValueTrait,
+    <V as ValueTrait>::Key: std::borrow::Borrow<String> + std::hash::Hash + Eq,
 {
     pub fn new(
         keywords: &'a keywords::KeywordMap<V>,
@@ -102,6 +105,7 @@ impl Error for SchemaError {}
 pub struct ScopedSchema<'a, V>
 where
     V: ValueTrait,
+    <V as ValueTrait>::Key: std::borrow::Borrow<String> + std::hash::Hash + Eq,
 {
     scope: &'a scope::Scope<V>,
     schema: &'a Schema<V>,
@@ -110,6 +114,7 @@ where
 impl<'a, V> ScopedSchema<'a, V>
 where
     V: ValueTrait,
+    <V as ValueTrait>::Key: std::borrow::Borrow<String> + std::hash::Hash + Eq,
 {
     pub fn new(scope: &'a scope::Scope<V>, schema: &'a Schema<V>) -> ScopedSchema<'a, V> {
         ScopedSchema { scope, schema }
@@ -127,6 +132,7 @@ where
 impl<'a, V> Schema<V>
 where
     V: ValueTrait,
+    <V as ValueTrait>::Key: std::borrow::Borrow<String> + std::hash::Hash + Eq,
 {
     fn validate_in_scope(
         &self,
@@ -421,6 +427,7 @@ pub fn compile<'a, V>(
 ) -> Result<Schema<V>, SchemaError>
 where
     V: ValueTrait,
+    <V as ValueTrait>::Key: std::borrow::Borrow<String> + std::hash::Hash + Eq,
 {
     Schema::compile(def, external_id, settings)
 }

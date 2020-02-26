@@ -1,6 +1,6 @@
 use super::error;
 use super::scope;
-use simd_json::value::Value;
+use simd_json::value::{Value as ValueTrait};
 
 use std::fmt;
 
@@ -47,14 +47,15 @@ impl ValidationState {
 
 pub trait Validator<V>
 where
-    V: Value,
+    V: ValueTrait,
+    <V as ValueTrait>::Key: std::borrow::Borrow<String> + std::hash::Hash + Eq,
 {
     fn validate(&self, item: &V, _: &str, _: &scope::Scope<V>) -> ValidationState;
 }
 
 impl<V> fmt::Debug for dyn Validator<V> + 'static + Send + Sync
 where
-    V: Value,
+    V: ValueTrait,
 {
     fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
         fmt.write_str("<validator>")

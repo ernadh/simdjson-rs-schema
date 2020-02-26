@@ -9,12 +9,13 @@ use super::helpers;
 pub struct Scope<V>
 where
     V: ValueTrait,
+    <V as ValueTrait>::Key: std::borrow::Borrow<String> + std::hash::Hash + Eq,
 {
     keywords: keywords::KeywordMap<V>,
     schemes: HashMap<String, schema::Schema<V>>,
 }
 
-impl<'a, V> Scope<V>
+impl<'a, V: 'static> Scope<V>
 where
     V: ValueTrait,
     <V as ValueTrait>::Key: std::borrow::Borrow<String> + std::hash::Hash + Eq,
@@ -31,6 +32,7 @@ where
 
     pub fn with_formats<F>(build_formats: F) -> Scope<V>
     where
+        V: ValueTrait,
         F: FnOnce(&mut keywords::format::FormatBuilders<V>),
     {
         let mut scope = Scope {
@@ -101,5 +103,13 @@ where
         } else {
             Err(schema::SchemaError::IdConflicts)
         }
+    }
+
+    pub fn add_keyword<T>(&mut self, keys: Vec<&'static str>, keyword: T)
+    where
+        //V: ValueTrait,
+        T: keywords::Keyword<V> + 'static,
+    {
+        keywords::decouple_keyword((keys, Box::new(keyword)), &mut self.keywords);
     }
 }

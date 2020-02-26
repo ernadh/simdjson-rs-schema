@@ -6,7 +6,7 @@ use super::validators;
 
 pub struct Ref;
 
-impl<V> super::Keyword<V> for Ref
+impl<V: 'static> super::Keyword<V> for Ref
 where
     V: ValueTrait,
     <V as ValueTrait>::Key: std::borrow::Borrow<String> + std::hash::Hash + Eq,

@@ -53,7 +53,7 @@ pub mod ref_;
 pub mod required;
 pub mod format;
 
-pub fn default<V>() -> KeywordMap<V>
+pub fn default<V: 'static>() -> KeywordMap<V>
 where
     V: ValueTrait,
     <V as ValueTrait>::Key: std::borrow::Borrow<String> + std::hash::Hash + Eq,

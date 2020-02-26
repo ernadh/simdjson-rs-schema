@@ -6,7 +6,11 @@ use super::validators;
 
 pub type FormatBuilders<V> = HashMap<String, Box<dyn super::Keyword<V> + 'static + Send + Sync>>;
 
-fn default_formats<V: ValueTrait>() -> FormatBuilders<V> {
+fn default_formats<V>() -> FormatBuilders<V> 
+where
+    V: ValueTrait,
+    <V as ValueTrait>::Key: std::borrow::Borrow<String> + std::hash::Hash + Eq,
+{
     let mut map: FormatBuilders<V> = HashMap::new();
 
     let date_time_builder = Box::new(|_def: &Value, _ctx: &schema::WalkContext<'_>| {

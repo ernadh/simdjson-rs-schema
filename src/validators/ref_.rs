@@ -6,7 +6,7 @@ pub struct Ref {
     pub url: url::Url,
 }
 
-impl<V> super::Validator<V> for Ref
+impl<V: 'static> super::Validator<V> for Ref
 where
     V: ValueTrait,
     <V as ValueTrait>::Key: std::borrow::Borrow<String> + std::hash::Hash + Eq,
