@@ -4,12 +4,14 @@ use super::schema;
 use super::validators;
 
 pub struct Required;
-impl<'key, V> super::Keyword<'key, V> for Required
+impl<V> super::Keyword<V> for Required
 where
     V: ValueTrait,
-    <V as ValueTrait>::Key: std::borrow::Borrow<String> + std::hash::Hash + Eq,
 {
-    fn compile(&self, def: &Value, ctx: &schema::WalkContext<'_>) -> super::KeywordResult<V> {
+    fn compile(&self, def: &Value, ctx: &schema::WalkContext<'_>) -> super::KeywordResult<V>
+    where
+        <V as ValueTrait>::Key: std::borrow::Borrow<str> + std::hash::Hash + Eq,
+    {
         let required = keyword_key_exists!(def, "required");
 
         if required.is_array() {
@@ -27,7 +29,7 @@ where
                 }
             }
 
-            Ok(Some(Box::new(validators::Required { items})))
+            Ok(Some(Box::new(validators::Required { items })))
         } else {
             Err(schema::SchemaError::Malformed {
                 path: ctx.fragment.join("/"),

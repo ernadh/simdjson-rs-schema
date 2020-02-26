@@ -8,30 +8,36 @@ use simd_json::value::{BorrowedValue as Value, Value as ValueTrait};
 use super::schema;
 use super::validators;
 
-pub type KeywordPair<'key, V> = (Vec<&'static str>, Box<dyn Keyword<'key, V> + 'static>);
-pub type KeywordResult<'key, V> = Result<Option<validators::BoxedValidator<'key, V>>, schema::SchemaError>;
-pub type KeywordMap<'key, V> = HashMap<&'static str, Arc<KeywordConsumer<'key, V>>>;
+pub type KeywordPair<V> = (Vec<&'static str>, Box<dyn Keyword<V> + 'static>);
+pub type KeywordResult<V> = Result<Option<validators::BoxedValidator<V>>, schema::SchemaError>;
+pub type KeywordMap<V> = HashMap<&'static str, Arc<KeywordConsumer<V>>>;
 
-pub trait Keyword<'key, V>: Send + Sync + any::Any
+pub trait Keyword<V>: Send + Sync + any::Any
 where
     V: ValueTrait,
 {
-    fn compile(&self, def: &Value, ctx: &schema::WalkContext) -> KeywordResult<V>;
+    fn compile(&self, def: &Value, ctx: &schema::WalkContext) -> KeywordResult<V>
+    where
+        <V as ValueTrait>::Key: std::borrow::Borrow<str> + std::hash::Hash + Eq;
     fn is_exclusive(&self) -> bool {
         false
     }
 }
 
-impl<'key, T: 'static + Send + Sync + any::Any, V: ValueTrait> Keyword<'key, V> for T
+impl<T: 'static + Send + Sync + any::Any, V> Keyword<V> for T
 where
-    T: Fn(&Value, &schema::WalkContext<'_>) -> KeywordResult<'key, V>,
+    V: ValueTrait,
+    T: Fn(&Value, &schema::WalkContext<'_>) -> KeywordResult<V>,
 {
-    fn compile(&self, def: &Value, ctx: &schema::WalkContext<'_>) -> KeywordResult<V> {
+    fn compile(&self, def: &Value, ctx: &schema::WalkContext<'_>) -> KeywordResult<V>
+    where
+        <V as ValueTrait>::Key: std::borrow::Borrow<str> + std::hash::Hash + Eq,
+    {
         self(def, ctx)
     }
 }
 
-impl<'key, V> fmt::Debug for dyn Keyword<'key, V> + 'static {
+impl<V> fmt::Debug for dyn Keyword<V> + 'static {
     fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
         fmt.write_str("<keyword>")
     }
@@ -49,14 +55,13 @@ macro_rules! keyword_key_exists {
     }};
 }
 
+pub mod format;
 pub mod ref_;
 pub mod required;
-pub mod format;
 
-pub fn default<'key, V: 'static>() -> KeywordMap<'key, V>
+pub fn default<V: 'static>() -> KeywordMap<V>
 where
     V: ValueTrait,
-    <V as ValueTrait>::Key: std::borrow::Borrow<String> + std::hash::Hash + Eq,
 {
     let mut map = HashMap::new();
 
@@ -66,15 +71,15 @@ where
 }
 
 #[derive(Debug)]
-pub struct KeywordConsumer<'key, V>
+pub struct KeywordConsumer<V>
 where
     V: ValueTrait,
 {
     pub keys: Vec<&'static str>,
-    pub keyword: Box<dyn Keyword<'key, V> + 'static>,
+    pub keyword: Box<dyn Keyword<V> + 'static>,
 }
 
-impl<'key, V> KeywordConsumer<'key, V>
+impl<V> KeywordConsumer<V>
 where
     V: ValueTrait,
 {

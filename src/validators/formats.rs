@@ -1,17 +1,19 @@
-use simd_json::value::{Value as ValueTrait};
 use super::scope;
 use chrono;
+use simd_json::value::Value as ValueTrait;
 
 use super::error;
 #[allow(missing_copy_implementations)]
 pub struct DateTime;
 
-impl<'key, V> super::Validator<'key, V> for DateTime
+impl<V> super::Validator<V> for DateTime
 where
     V: ValueTrait,
-    <V as ValueTrait>::Key: std::borrow::Borrow<&'key str> + std::hash::Hash + Eq,
 {
-    fn validate(&self, val: &V, path: &str, _scope: &scope::Scope<'key, V>) -> super::ValidationState {
+    fn validate(&self, val: &V, path: &str, _scope: &scope::Scope<V>) -> super::ValidationState
+    where
+        <V as ValueTrait>::Key: std::borrow::Borrow<str> + std::hash::Hash + Eq,
+    {
         // instead of nonstrict_process
         let string = val.as_str().unwrap();
 
