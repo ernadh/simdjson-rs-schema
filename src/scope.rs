@@ -4,37 +4,32 @@ use hashbrown::HashMap;
 use simd_json::value::{BorrowedValue as Value, Value as ValueTrait};
 use std::marker::PhantomData;
 
-
 use super::helpers;
 
 #[derive(Debug)]
-pub struct Scope<'key, V>
+pub struct Scope<V>
 where
     V: ValueTrait,
-    <V as ValueTrait>::Key: std::borrow::Borrow<&'key str> + std::hash::Hash + Eq,
 {
-    keywords: keywords::KeywordMap<'key, V>,
-    schemes: HashMap<String, schema::Schema<'key, V>>,
-    phantom: PhantomData<&'key V>,
+    keywords: keywords::KeywordMap<V>,
+    schemes: HashMap<String, schema::Schema<V>>,
 }
 
-impl<'key, 'validator, V: 'static> Scope<'key, V>
+impl<V: 'static> Scope<V>
 where
     V: ValueTrait,
-    <V as ValueTrait>::Key: std::borrow::Borrow<&'key str> + std::hash::Hash + Eq,
 {
-    pub fn new() -> Scope<'key, V> {
+    pub fn new() -> Scope<V> {
         let mut scope = Scope {
             keywords: keywords::default(),
             schemes: HashMap::new(),
-            phantom: PhantomData,
         };
 
         scope.add_keyword(vec!["format"], keywords::format::Format::new());
         scope
     }
 
-    pub fn with_formats<F>(build_formats: F) -> Scope<'key, V>
+    pub fn with_formats<F>(build_formats: F) -> Scope<V>
     where
         V: ValueTrait,
         F: FnOnce(&mut keywords::format::FormatBuilders<V>),
@@ -42,7 +37,6 @@ where
         let mut scope = Scope {
             keywords: keywords::default(),
             schemes: hashbrown::HashMap::new(),
-            phantom: PhantomData,
         };
 
         scope.add_keyword(
@@ -53,7 +47,9 @@ where
         scope
     }
 
-    pub fn resolve(&'key self, id: &url::Url) -> Option<schema::ScopedSchema<'key, V>>
+    pub fn resolve(&self, id: &url::Url) -> Option<schema::ScopedSchema<V>>
+    where
+        <V as ValueTrait>::Key: std::borrow::Borrow<str> + std::hash::Hash + Eq,
     {
         let (schema_path, fragment) = helpers::serialize_schema_path(id);
 
@@ -71,8 +67,8 @@ where
         schema.and_then(|schema| match fragment {
             Some(ref fragment) => schema
                 .resolve_fragment(fragment)
-                .map(|schema| schema::ScopedSchema::new(self, schema)),
-            None => Some(schema::ScopedSchema::new(self, schema)),
+                .map(|schema| schema::ScopedSchema::new(*self, *schema)),
+            None => Some(schema::ScopedSchema::new(*self, *schema)),
         })
     }
 
@@ -80,12 +76,15 @@ where
         &'_ mut self,
         def: Value<'static>,
         ban_unknown: bool,
-    ) -> Result<schema::ScopedSchema<'key, V>, schema::SchemaError> {
+    ) -> Result<schema::ScopedSchema<V>, schema::SchemaError>
+    where
+        <V as ValueTrait>::Key: std::borrow::Borrow<str> + std::hash::Hash + Eq,
+    {
         println!("IN  COMPILE AND RETURN");
         let schema = schema::compile(
             def,
             None,
-            schema::CompilationSettings::new(&self.keywords, ban_unknown),
+            schema::CompilationSettings::new(self.keywords.clone(), ban_unknown),
         )?;
         self.add_and_return(schema.id.clone().as_ref().unwrap(), schema)
     }
@@ -94,8 +93,11 @@ where
     fn add_and_return(
         &mut self,
         id: &url::Url,
-        schema: schema::Schema<'key, V>,
-    ) -> Result<schema::ScopedSchema<'key, V>, schema::SchemaError> {
+        schema: schema::Schema<V>,
+    ) -> Result<schema::ScopedSchema<V>, schema::SchemaError>
+    where
+        <V as ValueTrait>::Key: std::borrow::Borrow<str> + std::hash::Hash + Eq,
+    {
         let (id_str, fragment) = helpers::serialize_schema_path(id);
 
         if fragment.is_some() {
@@ -105,7 +107,7 @@ where
         if !self.schemes.contains_key(&id_str) {
             println!("schema {} not present so we are adding it", id_str);
             self.schemes.insert(id_str.clone(), schema);
-            Ok(schema::ScopedSchema::new(self, &self.schemes[&id_str]))
+            Ok(schema::ScopedSchema::new(*self, self.schemes[&id_str]))
         } else {
             Err(schema::SchemaError::IdConflicts)
         }
@@ -113,7 +115,7 @@ where
 
     pub fn add_keyword<T>(&mut self, keys: Vec<&'static str>, keyword: T)
     where
-        T: keywords::Keyword<'key, V> + 'static,
+        T: keywords::Keyword<V> + 'static,
     {
         keywords::decouple_keyword((keys, Box::new(keyword)), &mut self.keywords);
     }

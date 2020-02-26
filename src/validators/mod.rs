@@ -1,6 +1,6 @@
 use super::error;
 use super::scope;
-use simd_json::value::{Value as ValueTrait};
+use simd_json::value::Value as ValueTrait;
 
 use std::fmt;
 
@@ -29,10 +29,9 @@ macro_rules! val_error {
 pub use self::ref_::Ref;
 pub use self::required::Required;
 
+pub mod formats;
 pub mod ref_;
 pub mod required;
-pub mod formats;
-
 
 #[derive(Debug)]
 pub struct ValidationState {
@@ -54,15 +53,16 @@ impl ValidationState {
     }
 }
 
-pub trait Validator<'key, V>
+pub trait Validator<V>
 where
     V: ValueTrait,
-    <V as ValueTrait>::Key: std::borrow::Borrow<&'key str> + std::hash::Hash + Eq,
 {
-    fn validate(&self, item: &V, _: &str, _: &scope::Scope<'key, V>) -> ValidationState;
+    fn validate(&self, item: &V, _: &str, _: &scope::Scope<V>) -> ValidationState
+    where
+        <V as ValueTrait>::Key: std::borrow::Borrow<str> + std::hash::Hash + Eq;
 }
 
-impl<'key, V> fmt::Debug for dyn Validator<'key, V> + 'static + Send + Sync
+impl<V> fmt::Debug for dyn Validator<V> + 'static + Send + Sync
 where
     V: ValueTrait,
 {
@@ -71,5 +71,5 @@ where
     }
 }
 
-pub type BoxedValidator<'key, V> = Box<dyn Validator<'key, V> + 'static + Send + Sync>;
-pub type Validators<'key, V> = Vec<BoxedValidator<'key, V>>;
+pub type BoxedValidator<V> = Box<dyn Validator<V> + 'static + Send + Sync>;
+pub type Validators<V> = Vec<BoxedValidator<V>>;

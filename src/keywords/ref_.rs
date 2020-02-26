@@ -6,12 +6,14 @@ use super::validators;
 
 pub struct Ref;
 
-impl<'key, V: 'static> super::Keyword<'key, V> for Ref
+impl<V: 'static> super::Keyword<V> for Ref
 where
     V: ValueTrait,
-    <V as ValueTrait>::Key: std::borrow::Borrow<String> + std::hash::Hash + Eq,
 {
-    fn compile(&self, def: &Value, ctx: &schema::WalkContext<'_>) -> super::KeywordResult<V> {
+    fn compile(&self, def: &Value, ctx: &schema::WalkContext<'_>) -> super::KeywordResult<V>
+    where
+        <V as ValueTrait>::Key: std::borrow::Borrow<str> + std::hash::Hash + Eq,
+    {
         let ref_ = keyword_key_exists!(def, "$ref");
 
         if ref_.is_str() {

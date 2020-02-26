@@ -1,15 +1,14 @@
-use simd_json::value::{BorrowedValue as Value, Value as ValueTrait};
 use hashbrown::HashMap;
+use simd_json::value::{BorrowedValue as Value, Value as ValueTrait};
 
 use super::schema;
 use super::validators;
 
-pub type FormatBuilders<'key, V> = HashMap<String, Box<dyn super::Keyword<'key, V> + 'static + Send + Sync>>;
+pub type FormatBuilders<V> = HashMap<String, Box<dyn super::Keyword<V> + 'static + Send + Sync>>;
 
-fn default_formats<'key, V>() -> FormatBuilders<'key, V> 
+fn default_formats<V>() -> FormatBuilders<V>
 where
     V: ValueTrait,
-    <V as ValueTrait>::Key: std::borrow::Borrow<&'key str> + std::hash::Hash + Eq,
 {
     let mut map: FormatBuilders<V> = HashMap::new();
 
@@ -23,22 +22,21 @@ where
     map
 }
 
-pub struct Format<'key, V> {
-    pub formats: FormatBuilders<'key, V>,
+pub struct Format<V> {
+    pub formats: FormatBuilders<V>,
 }
 
-impl<'key, V> Format<'key, V>
+impl<V> Format<V>
 where
     V: ValueTrait,
-    <V as ValueTrait>::Key: std::borrow::Borrow<&'key str> + std::hash::Hash + Eq,
 {
-    pub fn new() -> Format<'key, V> {
+    pub fn new() -> Format<V> {
         Format {
             formats: default_formats(),
         }
     }
 
-    pub fn with<F>(build_formats: F) -> Format<'key, V>
+    pub fn with<F>(build_formats: F) -> Format<V>
     where
         F: FnOnce(&mut FormatBuilders<V>),
     {
@@ -48,12 +46,14 @@ where
     }
 }
 
-impl<'key, V> super::Keyword<'key, V> for Format<'key, V>
+impl<V> super::Keyword<V> for Format<V>
 where
-    V: ValueTrait,
-    <V as ValueTrait>::Key: std::borrow::Borrow<&'key str> + std::hash::Hash + Eq,
+    V: ValueTrait + 'static,
 {
-    fn compile(&self, def: &Value, ctx: &schema::WalkContext<'_>) -> super::KeywordResult<'key, V> {
+    fn compile(&self, def: &Value, ctx: &schema::WalkContext<'_>) -> super::KeywordResult<V>
+    where
+        <V as ValueTrait>::Key: std::borrow::Borrow<str> + std::hash::Hash + Eq,
+    {
         let format = keyword_key_exists!(def, "format");
 
         if format.as_str().is_some() {
