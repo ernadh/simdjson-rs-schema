@@ -2,7 +2,7 @@ use super::keywords;
 use super::schema;
 use hashbrown::HashMap;
 use simd_json::value::{BorrowedValue as Value, Value as ValueTrait};
-use std::marker::PhantomData;
+//use std::marker::PhantomData;
 
 use super::helpers;
 
@@ -67,8 +67,8 @@ where
         schema.and_then(|schema| match fragment {
             Some(ref fragment) => schema
                 .resolve_fragment(fragment)
-                .map(|schema| schema::ScopedSchema::new(*self, *schema)),
-            None => Some(schema::ScopedSchema::new(*self, *schema)),
+                .map(|schema| schema::ScopedSchema::new(self, &*schema)),
+            None => Some(schema::ScopedSchema::new(self, &*schema)),
         })
     }
 
@@ -107,7 +107,7 @@ where
         if !self.schemes.contains_key(&id_str) {
             println!("schema {} not present so we are adding it", id_str);
             self.schemes.insert(id_str.clone(), schema);
-            Ok(schema::ScopedSchema::new(*self, self.schemes[&id_str]))
+            Ok(schema::ScopedSchema::new(self, &self.schemes[&id_str]))
         } else {
             Err(schema::SchemaError::IdConflicts)
         }

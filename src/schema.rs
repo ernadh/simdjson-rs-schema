@@ -7,7 +7,7 @@ use std::fmt;
 use std::fmt::{Display, Formatter};
 
 use std::collections;
-use std::marker::PhantomData;
+//use std::marker::PhantomData;
 
 use super::helpers;
 use super::keywords;
@@ -101,21 +101,21 @@ impl Display for SchemaError {
 impl Error for SchemaError {}
 
 #[derive(Debug)]
-pub struct ScopedSchema<V>
+pub struct ScopedSchema<'scope, 'schema, V>
 where
     V: ValueTrait,
 {
-    scope: scope::Scope<V>,
-    schema: Schema<V>,
+    scope: &'scope scope::Scope<V>,
+    schema: &'schema Schema<V>,
 }
 
-impl<V> ScopedSchema<V>
+impl<'scope, 'schema, V> ScopedSchema<'scope, 'schema, V>
 where
     V: ValueTrait,
     <V as ValueTrait>::Key: std::borrow::Borrow<str> + std::hash::Hash + Eq,
 {
-    pub fn new(scope: scope::Scope<V>, schema: Schema<V>) -> ScopedSchema<V> {
-        ScopedSchema { scope, schema }
+    pub fn new(scope: &'scope scope::Scope<V>, schema: &'schema Schema<V>) -> ScopedSchema<'scope, 'schema, V> {
+        ScopedSchema { scope, schema: &schema }
     }
 
     pub fn validate(&self, data: &V) -> validators::ValidationState {
@@ -229,7 +229,7 @@ where
         };
 
         let validators = Schema::compile_keywords(
-            def,
+            def.clone(),
             &WalkContext {
                 url: &id,
                 fragment: vec![],
@@ -403,7 +403,7 @@ where
         }
 
         let validators = if is_schema && def.is_object() {
-            Schema::compile_keywords(def, context, keywords)?
+            Schema::compile_keywords(def.clone(), context, keywords)?
         } else {
             vec![]
         };
