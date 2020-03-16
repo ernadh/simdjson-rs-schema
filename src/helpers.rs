@@ -43,6 +43,34 @@ pub fn parse_url_key(key: &str, obj: &Value) -> Result<Option<Url>, schema::Sche
     }
 }
 
+pub fn alter_fragment_path(mut url: Url, new_fragment: String) -> Url {
+    let normalized_fragment = if new_fragment.starts_with('/') {
+        &new_fragment[1..]
+    } else {
+        new_fragment.as_ref()
+    };
+
+    let result_fragment = match url.fragment() {
+        Some(ref fragment) if !fragment.is_empty() => {
+            if !fragment.starts_with('/') {
+                let mut result_fragment = "".to_string();
+                let mut fragment_parts = fragment.split('/').map(|s| s.to_string());
+                result_fragment.push_str("#");
+                result_fragment.push_str(fragment_parts.next().unwrap().as_ref());
+                result_fragment.push_str("/");
+                result_fragment.push_str(normalized_fragment.as_ref());
+                result_fragment
+            } else {
+                "/".to_string() + normalized_fragment
+            }
+        }
+        _ => "/".to_string() + normalized_fragment,
+    };
+
+    url.set_fragment(Some(&result_fragment));
+    url
+}
+
 
 pub fn serialize_schema_path(url: &Url) -> (String, Option<String>) {
     let mut url_without_fragment = url.clone();

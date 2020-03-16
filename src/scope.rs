@@ -2,7 +2,6 @@ use super::keywords;
 use super::schema;
 use hashbrown::HashMap;
 use simd_json::value::{BorrowedValue as Value, Value as ValueTrait};
-//use std::marker::PhantomData;
 
 use super::helpers;
 
@@ -49,7 +48,7 @@ where
 
     pub fn resolve(&self, id: &url::Url) -> Option<schema::ScopedSchema<V>>
     where
-        <V as ValueTrait>::Key: std::borrow::Borrow<str> + std::hash::Hash + Eq,
+        <V as ValueTrait>::Key: std::borrow::Borrow<str> + std::hash::Hash + Eq + std::convert::AsRef<str>,
     {
         let (schema_path, fragment) = helpers::serialize_schema_path(id);
 
@@ -78,7 +77,7 @@ where
         ban_unknown: bool,
     ) -> Result<schema::ScopedSchema<V>, schema::SchemaError>
     where
-        <V as ValueTrait>::Key: std::borrow::Borrow<str> + std::hash::Hash + Eq,
+        <V as ValueTrait>::Key: std::borrow::Borrow<str> + std::hash::Hash + Eq + std::convert::AsRef<str>,
     {
         println!("IN  COMPILE AND RETURN");
         let schema = schema::compile(
@@ -86,6 +85,7 @@ where
             None,
             schema::CompilationSettings::new(self.keywords.clone(), ban_unknown),
         )?;
+        println!("COMPILATION DONE");
         self.add_and_return(schema.id.clone().as_ref().unwrap(), schema)
     }
 
@@ -96,7 +96,7 @@ where
         schema: schema::Schema<V>,
     ) -> Result<schema::ScopedSchema<V>, schema::SchemaError>
     where
-        <V as ValueTrait>::Key: std::borrow::Borrow<str> + std::hash::Hash + Eq,
+        <V as ValueTrait>::Key: std::borrow::Borrow<str> + std::hash::Hash + Eq + std::convert::AsRef<str>,
     {
         let (id_str, fragment) = helpers::serialize_schema_path(id);
 

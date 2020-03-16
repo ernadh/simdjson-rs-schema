@@ -7,7 +7,6 @@ use std::fmt;
 use std::fmt::{Display, Formatter};
 
 use std::collections;
-//use std::marker::PhantomData;
 
 use super::helpers;
 use super::keywords;
@@ -112,7 +111,7 @@ where
 impl<'scope, 'schema, V> ScopedSchema<'scope, 'schema, V>
 where
     V: ValueTrait,
-    <V as ValueTrait>::Key: std::borrow::Borrow<str> + std::hash::Hash + Eq,
+    <V as ValueTrait>::Key: std::borrow::Borrow<str> + std::hash::Hash + Eq + std::convert::AsRef<str>,
 {
     pub fn new(scope: &'scope scope::Scope<V>, schema: &'schema Schema<V>) -> ScopedSchema<'scope, 'schema, V> {
         ScopedSchema { scope, schema: &schema }
@@ -130,7 +129,7 @@ where
 impl<V> Schema<V>
 where
     V: ValueTrait,
-    <V as ValueTrait>::Key: std::borrow::Borrow<str> + std::hash::Hash + Eq,
+    <V as ValueTrait>::Key: std::borrow::Borrow<str> + std::hash::Hash + Eq + std::convert::AsRef<str>,
 {
     fn validate_in_scope(
         &self,
@@ -185,6 +184,8 @@ where
             return Err(SchemaError::NotAnObject);
         }
 
+        println!("DEF {:?}", def);
+
         let id = if external_id.is_some() {
             external_id.unwrap()
         } else {
@@ -202,10 +203,12 @@ where
             let mut scopes = hashbrown::HashMap::new();
 
             for (key, value) in obj.iter() {
+                println!("{}", key);
                 if !value.is_object() && !value.is_array() && !value.is_bool() {
                     continue;
                 }
                 if FINAL_KEYS.contains(&key[..]) {
+                    println!("{}", "it's a FINAL KEYS elem");
                     continue;
                 }
 
@@ -238,6 +241,8 @@ where
             &settings,
         )?;
 
+        println!("{}", validators.len());
+
         let schema = Schema {
             id: Some(id),
             schema,
@@ -266,6 +271,7 @@ where
             .map(|key| key.as_ref())
             .collect();
         let mut not_consumed = hashbrown::HashSet::new();
+        println!("{} {:?}", "Compiling keywords", keys);
 
         loop {
             let key = keys.iter().next().cloned();
@@ -364,6 +370,7 @@ where
                     tree.insert(helpers::encode(key), scheme);
                 }
             } else if def.is_array() {
+                println!("It's an array {:?}", def);
                 let array = def.as_array().unwrap();
                 let parent_key = &context.fragment[context.fragment.len() - 1];
 
@@ -402,6 +409,9 @@ where
                 .insert(id.clone().unwrap().into_string(), context.fragment.clone());
         }
 
+        println!("IS SCHEMA: {}", is_schema);
+        println!("IS OBJECT: {}", def.is_object());
+
         let validators = if is_schema && def.is_object() {
             Schema::compile_keywords(def.clone(), context, keywords)?
         } else {
@@ -428,7 +438,7 @@ pub fn compile<V>(
 ) -> Result<Schema<V>, SchemaError>
 where
     V: ValueTrait,
-    <V as ValueTrait>::Key: std::borrow::Borrow<str> + std::hash::Hash + Eq,
+    <V as ValueTrait>::Key: std::borrow::Borrow<str> + std::hash::Hash + Eq + std::convert::AsRef<str>,
 {
     Schema::compile(def, external_id, settings)
 }

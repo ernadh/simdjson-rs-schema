@@ -56,6 +56,7 @@ macro_rules! keyword_key_exists {
 }
 
 pub mod format;
+pub mod properties;
 pub mod ref_;
 pub mod required;
 
@@ -66,6 +67,7 @@ where
     let mut map = HashMap::new();
 
     decouple_keyword((vec!["$ref"], Box::new(ref_::Ref)), &mut map);
+    decouple_keyword((vec!["required"], Box::new(required::Required)), &mut map);
 
     map
 }

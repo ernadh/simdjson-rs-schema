@@ -153,6 +153,15 @@ macro_rules! impl_serialize {
 }
 
 #[derive(Debug)]
+#[allow(missing_copy_implementation)]
+pub struct Properties {
+    pub path: String,
+    pub detail: String,
+}
+impl_err!(Properties, "properties", "Property conditions are not met", +detail);
+impl_serialize!(Properties);
+
+#[derive(Debug)]
 pub struct Required {
     pub path: String,
 }

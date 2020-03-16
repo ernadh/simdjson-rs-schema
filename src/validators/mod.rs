@@ -4,7 +4,6 @@ use simd_json::value::Value as ValueTrait;
 
 use std::fmt;
 
-/*
 macro_rules! nonstrict_process {
     ($val:expr, $path:ident) => {{
         let maybe_val = $val;
@@ -12,10 +11,9 @@ macro_rules! nonstrict_process {
             return $crate::validators::ValidationState::new();
         }
 
-        maybe_val.unwrap();
+        maybe_val.unwrap()
     }};
 }
-*/
 
 macro_rules! val_error {
     ($err:expr) => {
@@ -28,10 +26,14 @@ macro_rules! val_error {
 
 pub use self::ref_::Ref;
 pub use self::required::Required;
+pub use self::properties::Properties;
+pub use self::property_names::PropertyNames;
 
 pub mod formats;
 pub mod ref_;
 pub mod required;
+pub mod properties;
+pub mod property_names;
 
 #[derive(Debug)]
 pub struct ValidationState {
@@ -47,6 +49,10 @@ impl ValidationState {
         }
     }
 
+    pub fn is_valid(&self) -> bool {
+        self.errors.is_empty()
+    }
+
     pub fn append(&mut self, second: ValidationState) {
         self.errors.extend(second.errors);
         self.missing.extend(second.missing);
@@ -59,7 +65,7 @@ where
 {
     fn validate(&self, item: &V, _: &str, _: &scope::Scope<V>) -> ValidationState
     where
-        <V as ValueTrait>::Key: std::borrow::Borrow<str> + std::hash::Hash + Eq;
+        <V as ValueTrait>::Key: std::borrow::Borrow<str> + std::hash::Hash + Eq + std::convert::AsRef<str>;
 }
 
 impl<V> fmt::Debug for dyn Validator<V> + 'static + Send + Sync

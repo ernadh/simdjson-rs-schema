@@ -13,6 +13,7 @@ where
         <V as ValueTrait>::Key: std::borrow::Borrow<str> + std::hash::Hash + Eq,
     {
         let required = keyword_key_exists!(def, "required");
+        println!("{} {:?}", "IN REQ KEYWORD", required);
 
         if required.is_array() {
             let required = required.as_array().unwrap();

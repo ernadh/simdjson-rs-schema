@@ -10,8 +10,8 @@ pub struct Required {
 impl<V> super::Validator<V> for Required
 where
     V: ValueTrait,
+    //<V as ValueTrait>::Key: std::borrow::Borrow<&'key str> + std::hash::Hash + Eq,
 {
-    //    <V as ValueTrait>::Key: std::borrow::Borrow<&'key str> + std::hash::Hash + Eq,
 
     fn validate(&self, val: &V, path: &str, _scope: &scope::Scope<V>) -> super::ValidationState
     where

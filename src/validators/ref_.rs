@@ -12,7 +12,7 @@ where
 {
     fn validate(&self, val: &V, path: &str, scope: &scope::Scope<V>) -> super::ValidationState
     where
-        <V as ValueTrait>::Key: std::borrow::Borrow<str> + std::hash::Hash + Eq,
+        <V as ValueTrait>::Key: std::borrow::Borrow<str> + std::hash::Hash + Eq + std::convert::AsRef<str>,
     {
         let schema = scope.resolve(&self.url);
 
