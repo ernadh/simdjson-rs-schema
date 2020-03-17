@@ -11,11 +11,11 @@ pub struct DateTime;
 
 impl<V> super::Validator<V> for DateTime
 where
-    V: ValueTrait,
+    V: ValueTrait + std::clone::Clone + std::convert::From<simd_json::value::owned::Value>,
+    //String: std::borrow::Borrow<<V as simd_json::value::Value>::Key>,
+    <V as ValueTrait>::Key: std::borrow::Borrow<str> + std::hash::Hash + Eq + std::convert::AsRef<str> + std::fmt::Debug + std::string::ToString + std::marker::Sync + std::marker::Send,
 {
     fn validate(&self, val: &V, path: &str, _scope: &scope::Scope<V>) -> super::ValidationState
-    where
-        <V as ValueTrait>::Key: std::borrow::Borrow<str> + std::hash::Hash + Eq,
     {
         let string = nonstrict_process!(val.as_str(), path);
 

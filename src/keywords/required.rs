@@ -1,19 +1,19 @@
-use simd_json::{BorrowedValue as Value, Value as ValueTrait};
+use simd_json::{Value as ValueTrait};
 
 use super::schema;
 use super::validators;
 
 pub struct Required;
-impl<V> super::Keyword<V> for Required
+impl<V: std::string::ToString> super::Keyword<V> for Required
 where
-    V: ValueTrait,
+    V: ValueTrait + std::clone::Clone + std::convert::From<simd_json::value::owned::Value>,
+    //String: std::borrow::Borrow<<V as simd_json::value::Value>::Key>,
+    <V as ValueTrait>::Key: std::borrow::Borrow<str> + std::hash::Hash + Eq + std::convert::AsRef<str> + std::fmt::Debug + std::string::ToString + std::marker::Sync + std::marker::Send,
 {
-    fn compile(&self, def: &Value, ctx: &schema::WalkContext<'_>) -> super::KeywordResult<V>
-    where
-        <V as ValueTrait>::Key: std::borrow::Borrow<str> + std::hash::Hash + Eq,
+    fn compile(&self, def: &V, ctx: &schema::WalkContext<'_>) -> super::KeywordResult<V>
     {
         let required = keyword_key_exists!(def, "required");
-        println!("{} {:?}", "IN REQ KEYWORD", required);
+        //println!("{} {:?}", "IN REQ KEYWORD", required);
 
         if required.is_array() {
             let required = required.as_array().unwrap();

@@ -1,7 +1,7 @@
 use super::keywords;
 use super::schema;
 use hashbrown::HashMap;
-use simd_json::value::{BorrowedValue as Value, Value as ValueTrait};
+use simd_json::value::{Value as ValueTrait};
 
 use super::helpers;
 
@@ -16,7 +16,9 @@ where
 
 impl<V: 'static> Scope<V>
 where
-    V: ValueTrait,
+    V: ValueTrait + std::clone::Clone + std::convert::From<simd_json::value::owned::Value> + std::fmt::Display,
+    //String: std::borrow::Borrow<<V as simd_json::value::Value>::Key>,
+    <V as ValueTrait>::Key: std::borrow::Borrow<str> + std::hash::Hash + Eq + std::convert::AsRef<str> + std::fmt::Debug + std::string::ToString + std::marker::Sync + std::marker::Send,
 {
     pub fn new() -> Scope<V> {
         let mut scope = Scope {
@@ -48,7 +50,7 @@ where
 
     pub fn resolve(&self, id: &url::Url) -> Option<schema::ScopedSchema<V>>
     where
-        <V as ValueTrait>::Key: std::borrow::Borrow<str> + std::hash::Hash + Eq + std::convert::AsRef<str>,
+        <V as ValueTrait>::Key: std::borrow::Borrow<str> + std::hash::Hash + Eq + std::convert::AsRef<str> + std::fmt::Debug + std::string::ToString,
     {
         let (schema_path, fragment) = helpers::serialize_schema_path(id);
 
@@ -73,11 +75,11 @@ where
 
     pub fn compile_and_return(
         &'_ mut self,
-        def: Value<'static>,
+        def: V,
         ban_unknown: bool,
     ) -> Result<schema::ScopedSchema<V>, schema::SchemaError>
     where
-        <V as ValueTrait>::Key: std::borrow::Borrow<str> + std::hash::Hash + Eq + std::convert::AsRef<str>,
+        <V as ValueTrait>::Key: std::borrow::Borrow<str> + std::hash::Hash + Eq + std::convert::AsRef<str> + std::fmt::Debug + std::string::ToString,
     {
         println!("IN  COMPILE AND RETURN");
         let schema = schema::compile(
@@ -96,7 +98,7 @@ where
         schema: schema::Schema<V>,
     ) -> Result<schema::ScopedSchema<V>, schema::SchemaError>
     where
-        <V as ValueTrait>::Key: std::borrow::Borrow<str> + std::hash::Hash + Eq + std::convert::AsRef<str>,
+        <V as ValueTrait>::Key: std::borrow::Borrow<str> + std::hash::Hash + Eq + std::convert::AsRef<str> + std::fmt::Debug + std::string::ToString,
     {
         let (id_str, fragment) = helpers::serialize_schema_path(id);
 

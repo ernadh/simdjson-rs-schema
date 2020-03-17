@@ -1,7 +1,8 @@
 use std::error::Error;
 use std::fmt::Debug;
 use std::any::{Any, TypeId};
-use simd_json::{BorrowedValue as Value, MutableValue, ValueBuilder};
+//use simd_json::{Value, MutableValue, ValueBuilder};
+use simd_json::{Value as ValueTrait};
 use serde::{Serialize, Serializer};
 
 pub trait GetTypeId: Any {
@@ -113,11 +114,13 @@ macro_rules! impl_err {
     };
 }
 
+/*
 macro_rules! impl_serialize {
     ($err:ty) => {
         impl Serialize for $err {
             fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error> where S: Serializer {
-                let mut map = Value::object();
+                let mut map = simd_json::value::deserialize("".as_bytes_mut()).unwrap();
+                //let mut map = ValueTrait::object();
                 map.insert("code".to_string(), self.get_code()).unwrap();
                 map.insert("title".to_string(), self.get_title()).unwrap();
                 map.insert("path".to_string(), self.get_path()).unwrap();
@@ -133,7 +136,7 @@ macro_rules! impl_serialize {
     ($err:ty, $($sp:expr),+) => {
         impl Serialize for $err {
             fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error> where S: Serializer {
-                let mut map = Value::map();
+                let mut map = ValueTrait::map();
                 map.insert("code".to_string(), self.get_code()).unwrap();
                 map.insert("title".to_string(), self.get_title()).unwrap();
                 map.insert("path".to_string(), self.get_path()).unwrap();
@@ -151,22 +154,23 @@ macro_rules! impl_serialize {
         }
     }
 }
+*/
 
 #[derive(Debug)]
-#[allow(missing_copy_implementation)]
+#[allow(missing_copy_implementations)]
 pub struct Properties {
     pub path: String,
     pub detail: String,
 }
 impl_err!(Properties, "properties", "Property conditions are not met", +detail);
-impl_serialize!(Properties);
+//impl_serialize!(Properties);
 
 #[derive(Debug)]
 pub struct Required {
     pub path: String,
 }
 impl_err!(Required, "required", "This property is required");
-impl_serialize!(Required);
+//impl_serialize!(Required);
 
 #[derive(Debug)]
 pub struct Format {
@@ -174,4 +178,4 @@ pub struct Format {
     pub detail: String,
 }
 impl_err!(Format, "format", "Format is wrong", +detail);
-impl_serialize!(Format);
+//impl_serialize!(Format);

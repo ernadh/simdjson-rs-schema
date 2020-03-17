@@ -1,4 +1,4 @@
-use simd_json::value::{BorrowedValue as Value, Value as ValueTrait};
+use simd_json::value::{Value as ValueTrait};
 use url::Url;
 
 use super::schema;
@@ -8,11 +8,11 @@ pub struct Ref;
 
 impl<V: 'static> super::Keyword<V> for Ref
 where
-    V: ValueTrait,
+    V: ValueTrait + std::clone::Clone + std::convert::From<simd_json::value::owned::Value> + std::fmt::Display,
+    //String: std::borrow::Borrow<<V as simd_json::value::Value>::Key>,
+    <V as ValueTrait>::Key: std::borrow::Borrow<str> + std::hash::Hash + Eq + std::convert::AsRef<str> + std::fmt::Debug + std::string::ToString + std::marker::Sync + std::marker::Send,
 {
-    fn compile(&self, def: &Value, ctx: &schema::WalkContext<'_>) -> super::KeywordResult<V>
-    where
-        <V as ValueTrait>::Key: std::borrow::Borrow<str> + std::hash::Hash + Eq,
+    fn compile(&self, def: &V, ctx: &schema::WalkContext<'_>) -> super::KeywordResult<V>
     {
         let ref_ = keyword_key_exists!(def, "$ref");
 

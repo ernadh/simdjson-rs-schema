@@ -1,18 +1,19 @@
-use simd_json::{BorrowedValue as Value, Value as ValueTrait};
+use simd_json::{Value as ValueTrait};
 use regex;
 
 use super::super::helpers;
 use super::schema;
 use super::validators;
 
-//#[allow(missing_copy_implementations)]
+#[allow(missing_copy_implementations)]
 pub struct Properties;
 impl<V: 'static> super::Keyword<V> for Properties
 where
-    V: ValueTrait,
-    String: std::borrow::Borrow<<V as simd_json::value::Value>::Key>,
+    V: ValueTrait + std::clone::Clone + std::convert::From<simd_json::value::owned::Value> + std::fmt::Display,
+    //String: std::borrow::Borrow<<V as simd_json::value::Value>::Key>,
+    <V as ValueTrait>::Key: std::borrow::Borrow<str> + std::hash::Hash + Eq + std::convert::AsRef<str> + std::fmt::Debug + std::string::ToString + std::marker::Sync + std::marker::Send,
 {
-    fn compile(&self, def: &Value, ctx: &schema::WalkContext<'_>) -> super::KeywordResult<V> {
+    fn compile(&self, def: &V, ctx: &schema::WalkContext<'_>) -> super::KeywordResult<V> {
         let maybe_properties = def.get("properties");
         let maybe_additional = def.get("additionalProperties");
         let maybe_pattern = def.get("patternProperties");
@@ -35,7 +36,7 @@ where
                                 [
                                     ctx.escaped_fragment().as_ref(),
                                     "properties",
-                                    helpers::encode(key).as_ref(),
+                                    helpers::encode(key.as_ref()).as_ref(),
                                 ]
                                 .join("/"),
                             ),
@@ -92,7 +93,7 @@ where
                                 let url = helpers::alter_fragment_path(ctx.url.clone(), [
                                     ctx.escaped_fragment().as_ref(),
                                     "patternProperties",
-                                    helpers::encode(key).as_ref()
+                                    helpers::encode(key.as_ref()).as_ref()
                                 ].join("/"));
                                 patterns.push((regex, url));
                             },

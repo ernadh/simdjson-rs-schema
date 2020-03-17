@@ -12,27 +12,29 @@ pub enum AdditionalKind {
 }
 
 #[allow(missing_copy_implementations)]
+//pub struct Properties<V: simd_json::value::Value> {
 pub struct Properties {
+    //pub properties: hashbrown::HashMap<<V as ValueTrait>::Key, url::Url>,
     pub properties: hashbrown::HashMap<String, url::Url>,
     pub additional: AdditionalKind,
     pub patterns: Vec<(regex::Regex, url::Url)>,
 }
 
+//impl<V: 'static> super::Validator<V> for Properties<V>
 impl<V: 'static> super::Validator<V> for Properties
 where
-    V: ValueTrait,
-    String: std::borrow::Borrow<<V as simd_json::value::Value>::Key>,
+    V: ValueTrait + std::clone::Clone + std::convert::From<simd_json::value::owned::Value> + std::fmt::Display,
+    //String: std::borrow::Borrow<<V as simd_json::value::Value>::Key>,
+    <V as ValueTrait>::Key: std::borrow::Borrow<str> + std::hash::Hash + Eq + std::convert::AsRef<str> + std::fmt::Debug + std::string::ToString + std::marker::Sync + std::marker::Send,
 {
     fn validate(&self, val: &V, path: &str, scope: &scope::Scope<V>) -> super::ValidationState 
-    where
-        <V as ValueTrait>::Key: std::borrow::Borrow<str> + std::hash::Hash + Eq + std::convert::AsRef<str>,
     {
         let object = nonstrict_process!(val.as_object(), path);
         let mut state = super::ValidationState::new();
 
         'main: for (key, value) in object.iter() {
-            let is_property_passed = if self.properties.contains_key(key) {
-                let url = &self.properties[key];
+            let is_property_passed = if self.properties.contains_key(key.as_ref()) {
+                let url = &self.properties[key.as_ref()];
                 let schema = scope.resolve(url);
                 if schema.is_some() {
                     let value_path = [path, key.as_ref()].join("/");

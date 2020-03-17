@@ -3,7 +3,7 @@ use std::fmt;
 use std::sync::Arc;
 
 use hashbrown::HashMap;
-use simd_json::value::{BorrowedValue as Value, Value as ValueTrait};
+use simd_json::value::{Value as ValueTrait};
 
 use super::schema;
 use super::validators;
@@ -14,9 +14,9 @@ pub type KeywordMap<V> = HashMap<&'static str, Arc<KeywordConsumer<V>>>;
 
 pub trait Keyword<V>: Send + Sync + any::Any
 where
-    V: ValueTrait,
+    V: ValueTrait + std::clone::Clone + std::convert::From<simd_json::value::owned::Value>,
 {
-    fn compile(&self, def: &Value, ctx: &schema::WalkContext) -> KeywordResult<V>
+    fn compile(&self, def: &V, ctx: &schema::WalkContext) -> KeywordResult<V>
     where
         <V as ValueTrait>::Key: std::borrow::Borrow<str> + std::hash::Hash + Eq;
     fn is_exclusive(&self) -> bool {
@@ -26,10 +26,10 @@ where
 
 impl<T: 'static + Send + Sync + any::Any, V> Keyword<V> for T
 where
-    V: ValueTrait,
-    T: Fn(&Value, &schema::WalkContext<'_>) -> KeywordResult<V>,
+    V: ValueTrait + std::clone::Clone + std::convert::From<simd_json::value::owned::Value>,
+    T: Fn(&V, &schema::WalkContext<'_>) -> KeywordResult<V>,
 {
-    fn compile(&self, def: &Value, ctx: &schema::WalkContext<'_>) -> KeywordResult<V>
+    fn compile(&self, def: &V, ctx: &schema::WalkContext<'_>) -> KeywordResult<V>
     where
         <V as ValueTrait>::Key: std::borrow::Borrow<str> + std::hash::Hash + Eq,
     {
@@ -57,17 +57,34 @@ macro_rules! keyword_key_exists {
 
 pub mod format;
 pub mod properties;
+pub mod property_names;
 pub mod ref_;
 pub mod required;
 
 pub fn default<V: 'static>() -> KeywordMap<V>
 where
-    V: ValueTrait,
+    V: ValueTrait + std::clone::Clone + std::convert::From<simd_json::value::owned::Value> + std::fmt::Display,
+    //String: std::borrow::Borrow<<V as simd_json::value::Value>::Key>,
+    <V as ValueTrait>::Key: std::borrow::Borrow<str> + std::hash::Hash + Eq + std::convert::AsRef<str> + std::fmt::Debug + std::string::ToString + std::marker::Sync + std::marker::Send,
 {
     let mut map = HashMap::new();
 
     decouple_keyword((vec!["$ref"], Box::new(ref_::Ref)), &mut map);
     decouple_keyword((vec!["required"], Box::new(required::Required)), &mut map);
+    decouple_keyword(
+        (
+            vec!["properties", "additionalProperties", "patternProperties"],
+            Box::new(properties::Properties),
+        ),
+        &mut map,
+    );
+    decouple_keyword(
+        (
+            vec!["propertyNames"],
+            Box::new(property_names::PropertyNames),
+        ),
+        &mut map,
+    );
 
     map
 }

@@ -10,12 +10,11 @@ pub struct PropertyNames {
 
 impl<V: 'static> super::Validator<V> for PropertyNames
 where
-    V: ValueTrait,
-    String: std::borrow::Borrow<<V as simd_json::value::Value>::Key>,
+    V: ValueTrait + std::clone::Clone + std::convert::From<simd_json::value::owned::Value> + std::fmt::Display,
+    //String: std::borrow::Borrow<<V as simd_json::value::Value>::Key>,
+    <V as ValueTrait>::Key: std::borrow::Borrow<str> + std::hash::Hash + Eq + std::convert::AsRef<str> + std::fmt::Debug + std::string::ToString + std::marker::Sync + std::marker::Send,
 {
     fn validate(&self, val: &V, path: &str, scope: &scope::Scope<V>) -> super::ValidationState
-    where
-        <V as ValueTrait>::Key: std::borrow::Borrow<str> + std::hash::Hash + Eq + std::convert::AsRef<str>,
     {
         let object = nonstrict_process!(val.as_object(), path);
 
@@ -26,8 +25,9 @@ where
             let schema = schema.unwrap();
             for key in object.keys() {
                 let item_path = [path, ["[", key.as_ref(), "]"].join("").as_ref()].join("/");
-                let val = key.clone().as_ref();
-                state.append(schema.validate_in(val, item_path.as_ref()));
+                // NOTE: Quite likely needing actual key thing here.
+                let v = object.get(key.as_ref()).unwrap();
+                state.append(schema.validate_in(v, item_path.as_ref()));
             }
         } else {
             state.missing.push(self.url.clone());
