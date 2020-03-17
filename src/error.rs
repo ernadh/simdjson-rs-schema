@@ -52,7 +52,6 @@ macro_rules! impl_basic_err {
 
         impl ::std::fmt::Display for $err {
             fn fmt(&self, formatter: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
-                //self.description().fmt(formatter)
                 std::fmt::Display::fmt(&self.description(), formatter)
             }
         }
@@ -114,48 +113,6 @@ macro_rules! impl_err {
     };
 }
 
-/*
-macro_rules! impl_serialize {
-    ($err:ty) => {
-        impl Serialize for $err {
-            fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error> where S: Serializer {
-                let mut map = simd_json::value::deserialize("".as_bytes_mut()).unwrap();
-                //let mut map = ValueTrait::object();
-                map.insert("code".to_string(), self.get_code()).unwrap();
-                map.insert("title".to_string(), self.get_title()).unwrap();
-                map.insert("path".to_string(), self.get_path()).unwrap();
-
-                if let Some(detail) = self.get_detail() {
-                    map.insert("detail".to_string(), detail).unwrap();
-                }
-
-                return map.serialize(serializer);
-            }
-        }
-    };
-    ($err:ty, $($sp:expr),+) => {
-        impl Serialize for $err {
-            fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error> where S: Serializer {
-                let mut map = ValueTrait::map();
-                map.insert("code".to_string(), self.get_code()).unwrap();
-                map.insert("title".to_string(), self.get_title()).unwrap();
-                map.insert("path".to_string(), self.get_path()).unwrap();
-
-                if let Some(detail) = self.get_detail() {
-                    map.insert("detail".to_string(), detail);
-                }
-
-                $({
-                    let closure = $sp;
-                    closure(self, &mut map);
-                })+
-                map.serialize(serializer);
-            }
-        }
-    }
-}
-*/
-
 #[derive(Debug)]
 #[allow(missing_copy_implementations)]
 pub struct Properties {
@@ -163,14 +120,12 @@ pub struct Properties {
     pub detail: String,
 }
 impl_err!(Properties, "properties", "Property conditions are not met", +detail);
-//impl_serialize!(Properties);
 
 #[derive(Debug)]
 pub struct Required {
     pub path: String,
 }
 impl_err!(Required, "required", "This property is required");
-//impl_serialize!(Required);
 
 #[derive(Debug)]
 pub struct Format {
@@ -178,4 +133,3 @@ pub struct Format {
     pub detail: String,
 }
 impl_err!(Format, "format", "Format is wrong", +detail);
-//impl_serialize!(Format);
