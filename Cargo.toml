@@ -13,6 +13,9 @@ uuid = {version = "0.8", features = ["v4"]}
 phf = "0.7"
 serde = "1.0"
 chrono = "*"
+publicsuffix = { version = "1.5.2", default-features = false }
+regex = { version = "1.0" }
+
 
 [build-dependencies.phf_codegen]
 version = "0.7"
