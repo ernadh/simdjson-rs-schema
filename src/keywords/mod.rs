@@ -7,6 +7,7 @@ use simd_json::value::{Value as ValueTrait};
 
 use super::schema;
 use super::validators;
+use super::helpers;
 
 pub type KeywordPair<V> = (Vec<&'static str>, Box<dyn Keyword<V> + 'static>);
 pub type KeywordResult<V> = Result<Option<validators::BoxedValidator<V>>, schema::SchemaError>;
@@ -62,6 +63,9 @@ pub mod ref_;
 pub mod required;
 pub mod pattern;
 pub mod type_;
+pub mod unique_items;
+pub mod of;
+pub mod not;
 
 pub fn default<V: 'static>() -> KeywordMap<V>
 where
@@ -72,8 +76,16 @@ where
     let mut map = HashMap::new();
 
     decouple_keyword((vec!["$ref"], Box::new(ref_::Ref)), &mut map);
+    decouple_keyword((vec!["allOf"], Box::new(of::AllOf)), &mut map);
+    decouple_keyword((vec!["anyOf"], Box::new(of::AnyOf)), &mut map);
+    decouple_keyword((vec!["oneOf"], Box::new(of::OneOf)), &mut map);
+    decouple_keyword((vec!["not"], Box::new(not::Not)), &mut map);
     decouple_keyword((vec!["required"], Box::new(required::Required)), &mut map);
     decouple_keyword((vec!["type"], Box::new(type_::Type)), &mut map);
+    decouple_keyword(
+        (vec!["uniqueItems"], Box::new(unique_items::UniqueItems)),
+        &mut map,
+    );
     decouple_keyword((vec!["pattern"], Box::new(pattern::Pattern)), &mut map);
     decouple_keyword(
         (

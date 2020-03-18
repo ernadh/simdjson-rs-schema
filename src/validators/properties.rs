@@ -1,5 +1,5 @@
-use regex;
 use simd_json::value::Value as ValueTrait;
+use regex;
 use url;
 
 use super::error;
@@ -12,19 +12,15 @@ pub enum AdditionalKind {
 }
 
 #[allow(missing_copy_implementations)]
-//pub struct Properties<V: simd_json::value::Value> {
 pub struct Properties {
-    //pub properties: hashbrown::HashMap<<V as ValueTrait>::Key, url::Url>,
     pub properties: hashbrown::HashMap<String, url::Url>,
     pub additional: AdditionalKind,
     pub patterns: Vec<(regex::Regex, url::Url)>,
 }
 
-//impl<V: 'static> super::Validator<V> for Properties<V>
 impl<V: 'static> super::Validator<V> for Properties
 where
     V: ValueTrait + std::clone::Clone + std::convert::From<simd_json::value::owned::Value> + std::fmt::Display,
-    //String: std::borrow::Borrow<<V as simd_json::value::Value>::Key>,
     <V as ValueTrait>::Key: std::borrow::Borrow<str> + std::hash::Hash + Eq + std::convert::AsRef<str> + std::fmt::Debug + std::string::ToString + std::marker::Sync + std::marker::Send,
 {
     fn validate(&self, val: &V, path: &str, scope: &scope::Scope<V>) -> super::ValidationState 

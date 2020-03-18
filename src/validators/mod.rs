@@ -30,7 +30,10 @@ pub use self::required::Required;
 pub use self::properties::Properties;
 pub use self::property_names::PropertyNames;
 pub use self::pattern::Pattern;
+pub use self::unique_items::UniqueItems;
 pub use self::type_::Type;
+pub use self::of::{AllOf, AnyOf, OneOf};
+pub use self::not::Not;
 
 pub mod formats;
 pub mod ref_;
@@ -39,6 +42,9 @@ pub mod properties;
 pub mod property_names;
 pub mod pattern;
 pub mod type_;
+pub mod unique_items;
+pub mod of;
+pub mod not;
 
 #[derive(Debug)]
 pub struct ValidationState {

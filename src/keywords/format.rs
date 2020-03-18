@@ -9,7 +9,6 @@ pub type FormatBuilders<V> = HashMap<String, Box<dyn super::Keyword<V> + 'static
 fn default_formats<V>() -> FormatBuilders<V>
 where
     V: ValueTrait + std::clone::Clone + std::convert::From<simd_json::value::owned::Value> + std::fmt::Display,
-    //String: std::borrow::Borrow<<V as simd_json::value::Value>::Key>,
     <V as ValueTrait>::Key: std::borrow::Borrow<str> + std::hash::Hash + Eq + std::convert::AsRef<str> + std::fmt::Debug + std::string::ToString + std::marker::Sync + std::marker::Send,
 {
     let mut map: FormatBuilders<V> = HashMap::new();
@@ -80,7 +79,6 @@ pub struct Format<V> {
 impl<V> Format<V>
 where
     V: ValueTrait + std::clone::Clone + std::convert::From<simd_json::value::owned::Value> + std::fmt::Display,
-    //String: std::borrow::Borrow<<V as simd_json::value::Value>::Key>,
     <V as ValueTrait>::Key: std::borrow::Borrow<str> + std::hash::Hash + Eq + std::convert::AsRef<str> + std::fmt::Debug + std::string::ToString + std::marker::Sync + std::marker::Send,
 {
     pub fn new() -> Format<V> {

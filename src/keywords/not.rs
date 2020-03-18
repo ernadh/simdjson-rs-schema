@@ -1,31 +1,31 @@
-use simd_json::{Value as ValueTrait};
+use simd_json::value::{Value as ValueTrait};
 
-use super::super::helpers;
-use super::super::schema;
-use super::super::validators;
+use super::helpers;
+use super::schema;
+use super::validators;
 
 #[allow(missing_copy_implementations)]
-pub struct PropertyNames;
-impl<V: 'static> super::Keyword<V> for PropertyNames
+pub struct Not;
+impl<V: 'static> super::Keyword<V> for Not
 where
     V: ValueTrait + std::clone::Clone + std::convert::From<simd_json::value::owned::Value> + std::fmt::Display,
+    //String: std::borrow::Borrow<<V as simd_json::value::Value>::Key>,
     <V as ValueTrait>::Key: std::borrow::Borrow<str> + std::hash::Hash + Eq + std::convert::AsRef<str> + std::fmt::Debug + std::string::ToString + std::marker::Sync + std::marker::Send,
 {
     fn compile(&self, def: &V, ctx: &schema::WalkContext<'_>) -> super::KeywordResult<V> {
-        let property_names = def.get("propertyNames").unwrap();
+        let not = keyword_key_exists!(def, "not");
 
-
-        if property_names.is_object() || property_names.is_bool() {
-            Ok(Some(Box::new(validators::PropertyNames {
+        if not.is_object() || not.is_bool() {
+            Ok(Some(Box::new(validators::Not {
                 url: helpers::alter_fragment_path(
                     ctx.url.clone(),
-                    [ctx.escaped_fragment().as_ref(), "propertyNames"].join("/"),
+                    [ctx.escaped_fragment().as_ref(), "not"].join("/"),
                 ),
             })))
         } else {
             Err(schema::SchemaError::Malformed {
                 path: ctx.fragment.join("/"),
-                detail: "The value of propertyNames must be an object or a boolean".to_string(),
+                detail: "The value of `not` MUST be an object or a boolean".to_string(),
             })
         }
     }
