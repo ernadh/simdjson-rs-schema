@@ -1,0 +1,7 @@
+use simd_json::value::Value as ValueTrait;
+
+use super::super::schema;
+use super::super::validators;
+
+kw_minmax_integer!(MaxProperties, "maxProperties");
+kw_minmax_integer!(MinProperties, "minProperties");

@@ -174,7 +174,78 @@ impl_err!(OneOf, "one_of", "OneOf conditions are not met");
 
 #[derive(Debug)]
 #[allow(missing_copy_implementations)]
+pub struct MultipleOf {
+    pub path: String,
+}
+impl_err!(MultipleOf, "multiple_of", "Wrong numer of the value");
+
+#[derive(Debug)]
+#[allow(missing_copy_implementations)]
 pub struct Not {
     pub path: String,
 }
 impl_err!(Not, "not", "Not condition is not met");
+
+#[derive(Debug)]
+#[allow(missing_copy_implementations)]
+pub struct Maximum {
+    pub path: String,
+}
+impl_err!(Maximum, "maximum", "Maximum condition is not met");
+
+#[derive(Debug)]
+#[allow(missing_copy_implementations)]
+pub struct Minimum {
+    pub path: String,
+}
+impl_err!(Minimum, "minimum", "Minimum condition is not met");
+
+#[derive(Debug)]
+#[allow(missing_copy_implementations)]
+pub struct MaxLength {
+    pub path: String,
+}
+impl_err!(MaxLength, "max_length", "MaxLength condition is not met");
+
+#[derive(Debug)]
+#[allow(missing_copy_implementations)]
+pub struct MinLength {
+    pub path: String,
+}
+impl_err!(MinLength, "min_length", "MinLength condition is not met");
+
+#[derive(Debug)]
+#[allow(missing_copy_implementations)]
+pub struct MaxItems {
+    pub path: String,
+}
+impl_err!(MaxItems, "max_items", "MaxItems condition is not met");
+
+#[derive(Debug)]
+#[allow(missing_copy_implementations)]
+pub struct MinItems {
+    pub path: String,
+}
+impl_err!(MinItems, "min_items", "MinItems condition is not met");
+
+#[derive(Debug)]
+#[allow(missing_copy_implementations)]
+pub struct MaxProperties {
+    pub path: String,
+}
+impl_err!(
+    MaxProperties,
+    "max_properties",
+    "MaxProperties condition is not met"
+);
+
+#[derive(Debug)]
+#[allow(missing_copy_implementations)]
+pub struct MinProperties {
+    pub path: String,
+}
+impl_err!(
+    MinProperties,
+    "min_properties",
+    "MinProperties condition is not met"
+);

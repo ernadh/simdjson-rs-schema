@@ -13,7 +13,6 @@ where
     fn validate(&self, val: &V, path: &str, _scope: &scope::Scope<V>) -> super::ValidationState {
         let array = nonstrict_process!(val.as_array(), path);
 
-        println!("{}", "VALIDATING UNIQUENESS");
         let mut unique = true;
         'main: for (idx, item_i) in array.iter().enumerate() {
             for item_j in array[..idx].iter() {

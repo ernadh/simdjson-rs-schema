@@ -25,14 +25,34 @@ macro_rules! val_error {
     };
 }
 
+#[macro_export]
+macro_rules! strict_process {
+    ($val:expr, $path:ident, $err:expr) => {{
+        let maybe_val = $val;
+        if maybe_val.is_none() {
+            return val_error!($crate::error::WrongType {
+                path: $path.to_string(),
+                detail: $err.to_string()
+            });
+        }
+
+        maybe_val.unwrap()
+    }};
+}
+
 pub use self::ref_::Ref;
 pub use self::required::Required;
 pub use self::properties::Properties;
 pub use self::property_names::PropertyNames;
 pub use self::pattern::Pattern;
 pub use self::unique_items::UniqueItems;
+pub use self::maxmin::{ExclusiveMaximum, ExclusiveMinimum, Maximum, Minimum};
+pub use self::maxmin_items::{MaxItems, MinItems};
+pub use self::maxmin_length::{MaxLength, MinLength};
+pub use self::maxmin_properties::{MaxProperties, MinProperties};
 pub use self::type_::Type;
 pub use self::of::{AllOf, AnyOf, OneOf};
+pub use self::multiple_of::MultipleOf;
 pub use self::not::Not;
 
 pub mod formats;
@@ -42,8 +62,13 @@ pub mod properties;
 pub mod property_names;
 pub mod pattern;
 pub mod type_;
+mod maxmin;
+mod maxmin_items;
+mod maxmin_length;
+mod maxmin_properties;
 pub mod unique_items;
 pub mod of;
+pub mod multiple_of;
 pub mod not;
 
 #[derive(Debug)]
