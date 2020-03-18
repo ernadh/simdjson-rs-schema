@@ -60,6 +60,8 @@ pub mod properties;
 pub mod property_names;
 pub mod ref_;
 pub mod required;
+pub mod pattern;
+pub mod type_;
 
 pub fn default<V: 'static>() -> KeywordMap<V>
 where
@@ -71,6 +73,8 @@ where
 
     decouple_keyword((vec!["$ref"], Box::new(ref_::Ref)), &mut map);
     decouple_keyword((vec!["required"], Box::new(required::Required)), &mut map);
+    decouple_keyword((vec!["type"], Box::new(type_::Type)), &mut map);
+    decouple_keyword((vec!["pattern"], Box::new(pattern::Pattern)), &mut map);
     decouple_keyword(
         (
             vec!["properties", "additionalProperties", "patternProperties"],

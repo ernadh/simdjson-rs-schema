@@ -3,6 +3,7 @@ use simd_json::value::Value as ValueTrait;
 use super::error;
 use super::scope;
 
+#[allow(missing_copy_implementations)]
 pub struct Required {
     pub items: Vec<String>,
 }
@@ -10,14 +11,12 @@ pub struct Required {
 impl<V> super::Validator<V> for Required
 where
     V: ValueTrait,
-    //<V as ValueTrait>::Key: std::borrow::Borrow<&'key str> + std::hash::Hash + Eq,
 {
 
     fn validate(&self, val: &V, path: &str, _scope: &scope::Scope<V>) -> super::ValidationState
     where
         <V as ValueTrait>::Key: std::borrow::Borrow<str> + std::hash::Hash + Eq,
     {
-        println!("IN VALIDATE for required");
         let mut state = super::ValidationState::new();
 
         for key in self.items.iter() {

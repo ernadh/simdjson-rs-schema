@@ -44,7 +44,7 @@ where
                     } else {
                         return Err(schema::SchemaError::Malformed {
                             path: ctx.fragment.join("/"),
-                            detail: "Each value of this object MUST be an object or a boolean"
+                            detail: "Each value of this object must be an object or a boolean"
                                 .to_string(),
                         });
                     }
@@ -53,7 +53,7 @@ where
             } else {
                 return Err(schema::SchemaError::Malformed {
                     path: ctx.fragment.join("/"),
-                    detail: "The value of `properties` MUST be an object.".to_string(),
+                    detail: "The value of `properties` must be an object.".to_string(),
                 });
             }
         } else {
@@ -72,7 +72,7 @@ where
             } else {
                 return Err(schema::SchemaError::Malformed {
                     path: ctx.fragment.join("/"),
-                    detail: "The value of `additionalProperties` MUST be a boolean or an object."
+                    detail: "The value of `additionalProperties` must be a boolean or an object."
                         .to_string(),
                 });
             }
@@ -107,7 +107,7 @@ where
                     } else {
                         return Err(schema::SchemaError::Malformed {
                             path: ctx.fragment.join("/"),
-                            detail: "Each value of this object MUST be an object or a boolean"
+                            detail: "Each value of this object must be an object or a boolean"
                                 .to_string(),
                         });
                     }
@@ -117,7 +117,7 @@ where
             } else {
                 return Err(schema::SchemaError::Malformed {
                     path: ctx.fragment.join("/"),
-                    detail: "The value of `patternProperties` MUST be an object".to_string(),
+                    detail: "The value of `patternProperties` must be an object".to_string(),
                 });
             }
         } else {

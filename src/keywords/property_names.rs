@@ -13,7 +13,6 @@ where
     <V as ValueTrait>::Key: std::borrow::Borrow<str> + std::hash::Hash + Eq + std::convert::AsRef<str> + std::fmt::Debug + std::string::ToString + std::marker::Sync + std::marker::Send,
 {
     fn compile(&self, def: &V, ctx: &schema::WalkContext<'_>) -> super::KeywordResult<V> {
-        //let property_names = keyword_key_exists!(def, "propertyNames");
         let property_names = def.get("propertyNames").unwrap();
 
 
@@ -27,7 +26,7 @@ where
         } else {
             Err(schema::SchemaError::Malformed {
                 path: ctx.fragment.join("/"),
-                detail: "The value of propertyNames MUST be an object or a boolean".to_string(),
+                detail: "The value of propertyNames must be an object or a boolean".to_string(),
             })
         }
     }

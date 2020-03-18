@@ -1,9 +1,6 @@
 use std::error::Error;
 use std::fmt::Debug;
 use std::any::{Any, TypeId};
-//use simd_json::{Value, MutableValue, ValueBuilder};
-use simd_json::{Value as ValueTrait};
-use serde::{Serialize, Serializer};
 
 pub trait GetTypeId: Any {
     fn typeid(&self) -> TypeId {
@@ -133,3 +130,17 @@ pub struct Format {
     pub detail: String,
 }
 impl_err!(Format, "format", "Format is wrong", +detail);
+
+#[derive(Debug)]
+pub struct Pattern {
+    pub path: String,
+}
+impl_err!(Pattern, "pattern", "Pattern condition is not met");
+
+#[derive(Debug)]
+#[allow(missing_copy_implementations)]
+pub struct WrongType {
+    pub path: String,
+    pub detail: String,
+}
+impl_err!(WrongType, "wrong_type", "Type of the value is wrong", +detail);

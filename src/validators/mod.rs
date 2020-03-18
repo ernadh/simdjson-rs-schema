@@ -1,5 +1,6 @@
 use super::error;
 use super::scope;
+use super::primitive_types;
 use simd_json::value::Value as ValueTrait;
 
 use std::fmt;
@@ -28,12 +29,16 @@ pub use self::ref_::Ref;
 pub use self::required::Required;
 pub use self::properties::Properties;
 pub use self::property_names::PropertyNames;
+pub use self::pattern::Pattern;
+pub use self::type_::Type;
 
 pub mod formats;
 pub mod ref_;
 pub mod required;
 pub mod properties;
 pub mod property_names;
+pub mod pattern;
+pub mod type_;
 
 #[derive(Debug)]
 pub struct ValidationState {
