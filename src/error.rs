@@ -264,3 +264,17 @@ pub struct Enum {
     pub path: String,
 }
 impl_err!(Enum, "enum", "Enum conditions are not met");
+
+#[derive(Debug)]
+#[allow(missing_copy_implementations)]
+pub struct Contains {
+    pub path: String,
+}
+impl_err!(Contains, "contains", "Contains condition is not met");
+
+#[derive(Debug)]
+#[allow(missing_copy_implementations)]
+pub struct Const {
+    pub path: String,
+}
+impl_err!(Const, "const", "Const condition is not met");

@@ -58,6 +58,8 @@ macro_rules! keyword_key_exists {
 
 #[macro_use]
 pub mod maxmin_length;
+pub mod contains;
+pub mod const_;
 pub mod items;
 pub mod format;
 pub mod properties;
@@ -74,6 +76,7 @@ pub mod not;
 pub mod maxmin;
 pub mod maxmin_items;
 pub mod maxmin_properties;
+pub mod dependencies;
 
 pub fn default<V: 'static>() -> KeywordMap<V>
 where
@@ -89,7 +92,10 @@ where
     decouple_keyword((vec!["multipleOf"], Box::new(multiple_of::MultipleOf)), &mut map);
     decouple_keyword((vec!["not"], Box::new(not::Not)), &mut map);
     decouple_keyword((vec!["required"], Box::new(required::Required)), &mut map);
+    decouple_keyword((vec!["dependencies"], Box::new(dependencies::Dependencies)), &mut map);
     decouple_keyword((vec!["type"], Box::new(type_::Type)), &mut map);
+    decouple_keyword((vec!["contains"], Box::new(contains::Contains)), &mut map);
+    decouple_keyword((vec!["const"], Box::new(const_::Const)), &mut map);
     decouple_keyword((vec!["items"], Box::new(items::Items)), &mut map);
     decouple_keyword((vec!["enum"], Box::new(enum_::Enum)), &mut map);
     decouple_keyword((vec!["exclusiveMaximum"], Box::new(maxmin::ExclusiveMaximum)), &mut map);
