@@ -1,6 +1,6 @@
+use std::any::{Any, TypeId};
 use std::error::Error;
 use std::fmt::Debug;
-use std::any::{Any, TypeId};
 
 pub trait GetTypeId: Any {
     fn typeid(&self) -> TypeId {
@@ -49,7 +49,7 @@ macro_rules! impl_basic_err {
 
         impl ::std::fmt::Display for $err {
             fn fmt(&self, formatter: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
-                std::fmt::Display::fmt(&self.description(), formatter)
+                std::fmt::Display::fmt(&self.to_string(), formatter)
             }
         }
     };

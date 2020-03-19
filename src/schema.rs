@@ -1,7 +1,7 @@
 use phf;
-use simd_json::value::{Value as ValueTrait};
 use std::error::Error;
 use url;
+use value_trait::*;
 
 use std::fmt;
 use std::fmt::{Display, Formatter};
@@ -16,7 +16,7 @@ use super::validators;
 #[derive(Debug)]
 pub struct Schema<V>
 where
-    V: ValueTrait,
+    V: Value,
 {
     pub id: Option<url::Url>,
     schema: Option<url::Url>,
@@ -30,7 +30,7 @@ include!(concat!(env!("OUT_DIR"), "/codegen.rs"));
 
 pub struct CompilationSettings<V>
 where
-    V: ValueTrait,
+    V: Value,
 {
     pub keywords: keywords::KeywordMap<V>,
     pub ban_unknown_keywords: bool,
@@ -38,7 +38,7 @@ where
 
 impl<V> CompilationSettings<V>
 where
-    V: ValueTrait,
+    V: Value,
 {
     pub fn new(
         keywords: keywords::KeywordMap<V>,
@@ -102,7 +102,7 @@ impl Error for SchemaError {}
 #[derive(Debug)]
 pub struct ScopedSchema<'scope, 'schema, V>
 where
-    V: ValueTrait + std::clone::Clone,
+    V: Value + std::clone::Clone,
 {
     scope: &'scope scope::Scope<V>,
     schema: &'schema Schema<V>,
@@ -110,11 +110,22 @@ where
 
 impl<'scope, 'schema, V: std::clone::Clone> ScopedSchema<'scope, 'schema, V>
 where
-    V: ValueTrait + std::convert::From<simd_json::value::owned::Value>,
-    <V as ValueTrait>::Key: std::borrow::Borrow<str> + std::hash::Hash + Eq + std::convert::AsRef<str> + std::fmt::Debug + std::string::ToString,
+    V: Value + std::convert::From<simd_json::value::owned::Value>,
+    <V as Value>::Key: std::borrow::Borrow<str>
+        + std::hash::Hash
+        + Eq
+        + std::convert::AsRef<str>
+        + std::fmt::Debug
+        + std::string::ToString,
 {
-    pub fn new(scope: &'scope scope::Scope<V>, schema: &'schema Schema<V>) -> ScopedSchema<'scope, 'schema, V> {
-        ScopedSchema { scope, schema: &schema }
+    pub fn new(
+        scope: &'scope scope::Scope<V>,
+        schema: &'schema Schema<V>,
+    ) -> ScopedSchema<'scope, 'schema, V> {
+        ScopedSchema {
+            scope,
+            schema: &schema,
+        }
     }
 
     pub fn validate(&self, data: &V) -> validators::ValidationState {
@@ -128,8 +139,13 @@ where
 
 impl<V: std::clone::Clone> Schema<V>
 where
-    V: ValueTrait + std::convert::From<simd_json::value::owned::Value>,
-    <V as ValueTrait>::Key: std::borrow::Borrow<str> + std::hash::Hash + Eq + std::convert::AsRef<str> + std::fmt::Debug + std::string::ToString,
+    V: Value + std::convert::From<simd_json::value::owned::Value>,
+    <V as Value>::Key: std::borrow::Borrow<str>
+        + std::hash::Hash
+        + Eq
+        + std::convert::AsRef<str>
+        + std::fmt::Debug
+        + std::string::ToString,
 {
     fn validate_in_scope(
         &self,
@@ -140,7 +156,12 @@ where
         let mut state = validators::ValidationState::new();
 
         for validator in self.validators.iter() {
-            println!("ANOTHER VALIDATOR {:?} {:?} {:?}", data.as_str(), path, state);
+            println!(
+                "ANOTHER VALIDATOR {:?} {:?} {:?}",
+                data.as_str(),
+                path,
+                state
+            );
             state.append(validator.validate(data, path, scope))
         }
 
@@ -261,7 +282,12 @@ where
         settings: &CompilationSettings<V>,
     ) -> Result<validators::Validators<V>, SchemaError>
     where
-        <V as ValueTrait>::Key: std::borrow::Borrow<str> + std::hash::Hash + Eq + std::convert::AsRef<str> + std::fmt::Debug + std::string::ToString,
+        <V as Value>::Key: std::borrow::Borrow<str>
+            + std::hash::Hash
+            + Eq
+            + std::convert::AsRef<str>
+            + std::fmt::Debug
+            + std::string::ToString,
     {
         let mut validators = vec![];
         let mut keys: hashbrown::HashSet<&str> = def
@@ -348,7 +374,9 @@ where
                     if !value.is_object() && !value.is_array() && !value.is_bool() {
                         continue;
                     }
-                    if !PROPERTY_KEYS.contains(&parent_key[..]) && FINAL_KEYS.contains(&key.as_ref()[..]) {
+                    if !PROPERTY_KEYS.contains(&parent_key[..])
+                        && FINAL_KEYS.contains(&key.as_ref()[..])
+                    {
                         continue;
                     }
 
@@ -437,8 +465,13 @@ pub fn compile<V>(
     settings: CompilationSettings<V>,
 ) -> Result<Schema<V>, SchemaError>
 where
-    V: ValueTrait + std::clone::Clone + std::convert::From<simd_json::value::owned::Value>,
-    <V as ValueTrait>::Key: std::borrow::Borrow<str> + std::hash::Hash + Eq + std::convert::AsRef<str> + std::fmt::Debug + std::string::ToString,
+    V: Value + std::clone::Clone + std::convert::From<simd_json::value::owned::Value>,
+    <V as Value>::Key: std::borrow::Borrow<str>
+        + std::hash::Hash
+        + Eq
+        + std::convert::AsRef<str>
+        + std::fmt::Debug
+        + std::string::ToString,
 {
     Schema::compile(def, external_id, settings)
 }

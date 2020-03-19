@@ -1,6 +1,6 @@
-use simd_json::value::Value as ValueTrait;
 use std::cmp;
 use url;
+use value_trait::*;
 
 use super::error;
 use super::scope;
@@ -25,8 +25,22 @@ pub struct Items {
 
 impl<V> super::Validator<V> for Items
 where
-    V: ValueTrait + std::clone::Clone + std::convert::From<simd_json::value::owned::Value> + std::fmt::Display + std::marker::Sync + std::marker::Send + std::cmp::PartialEq + 'static,
-    <V as ValueTrait>::Key: std::borrow::Borrow<str> + std::hash::Hash + Eq + std::convert::AsRef<str> + std::fmt::Debug + std::string::ToString + std::marker::Sync + std::marker::Send,
+    V: Value
+        + std::clone::Clone
+        + std::convert::From<simd_json::value::owned::Value>
+        + std::fmt::Display
+        + std::marker::Sync
+        + std::marker::Send
+        + std::cmp::PartialEq
+        + 'static,
+    <V as Value>::Key: std::borrow::Borrow<str>
+        + std::hash::Hash
+        + Eq
+        + std::convert::AsRef<str>
+        + std::fmt::Debug
+        + std::string::ToString
+        + std::marker::Sync
+        + std::marker::Send,
 {
     fn validate(&self, val: &V, path: &str, scope: &scope::Scope<V>) -> super::ValidationState {
         let array = nonstrict_process!(val.as_array(), path);
@@ -52,7 +66,7 @@ where
                 // Validate against schemas
                 for idx in 0..min {
                     let schema = scope.resolve(&urls[idx]);
-                    let item = &array[idx];
+                    let item = &array.get(idx).unwrap();
 
                     if schema.is_some() {
                         let item_path = [path, idx.to_string().as_ref()].join("/");
@@ -75,7 +89,9 @@ where
                             let schema = scope.resolve(url);
                             if schema.is_some() {
                                 let schema = schema.unwrap();
-                                for (idx, item) in array[urls.len()..].iter().enumerate() {
+                                for (idx, item) in
+                                    array.get(urls.len()..).unwrap().iter().enumerate()
+                                {
                                     let item_path = [path, idx.to_string().as_ref()].join("/");
                                     state.append(schema.validate_in(item, item_path.as_ref()))
                                 }
