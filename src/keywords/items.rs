@@ -1,4 +1,4 @@
-use simd_json::value::{Value as ValueTrait};
+use value_trait::*;
 
 use super::helpers;
 use super::schema;
@@ -8,8 +8,21 @@ use super::validators;
 pub struct Items;
 impl<V: 'static> super::Keyword<V> for Items
 where
-    V: ValueTrait + std::clone::Clone + std::convert::From<simd_json::value::owned::Value> + std::fmt::Display + std::marker::Sync + std::marker::Send + std::cmp::PartialEq,
-    <V as ValueTrait>::Key: std::borrow::Borrow<str> + std::hash::Hash + Eq + std::convert::AsRef<str> + std::fmt::Debug + std::string::ToString + std::marker::Sync + std::marker::Send,
+    V: Value
+        + std::clone::Clone
+        + std::convert::From<simd_json::value::owned::Value>
+        + std::fmt::Display
+        + std::marker::Sync
+        + std::marker::Send
+        + std::cmp::PartialEq,
+    <V as Value>::Key: std::borrow::Borrow<str>
+        + std::hash::Hash
+        + Eq
+        + std::convert::AsRef<str>
+        + std::fmt::Debug
+        + std::string::ToString
+        + std::marker::Sync
+        + std::marker::Send,
 {
     fn compile(&self, def: &V, ctx: &schema::WalkContext<'_>) -> super::KeywordResult<V> {
         let maybe_items = def.get("items");

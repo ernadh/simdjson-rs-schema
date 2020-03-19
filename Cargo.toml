@@ -6,15 +6,16 @@ edition = "2018"
 build = "build.rs"
 
 [dependencies]
-simd-json = { version = "0.2.4" }
+simd-json = { version = "0.3.0" }
+value-trait = "0.1.3"
 url = { version = "1" }
 hashbrown = { version = "0.7" }
 uuid = {version = "0.8", features = ["v4"]}
 phf = "0.7"
 serde = "1.0"
 chrono = "*"
-publicsuffix = { version = "1.5.2", default-features = false }
-regex = { version = "1.0" }
+publicsuffix = { version = "1.5.4", default-features = false }
+regex = { version = "1.3" }
 
 
 [build-dependencies.phf_codegen]
