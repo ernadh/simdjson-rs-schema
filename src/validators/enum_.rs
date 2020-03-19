@@ -1,31 +1,33 @@
 use simd_json::value::Value as ValueTrait;
-use url;
 
 use super::error;
 use super::scope;
 
 #[allow(missing_copy_implementations)]
-pub struct Not {
-    pub url: url::Url,
+pub struct Enum<V: ValueTrait> {
+    pub items: Vec<V>,
 }
 
-impl<V: 'static> super::Validator<V> for Not
+impl<V> super::Validator<V> for Enum<V>
 where
     V: ValueTrait + std::clone::Clone + std::convert::From<simd_json::value::owned::Value> + std::fmt::Display + std::marker::Sync + std::marker::Send + std::cmp::PartialEq + 'static,
     <V as ValueTrait>::Key: std::borrow::Borrow<str> + std::hash::Hash + Eq + std::convert::AsRef<str> + std::fmt::Debug + std::string::ToString + std::marker::Sync + std::marker::Send,
 {
-    fn validate(&self, val: &V, path: &str, scope: &scope::Scope<V>) -> super::ValidationState {
-        let schema = scope.resolve(&self.url);
+    fn validate(&self, val: &V, path: &str, _scope: &scope::Scope<V>) -> super::ValidationState {
         let mut state = super::ValidationState::new();
 
-        if schema.is_some() {
-            if schema.unwrap().validate_in(val, path).is_valid() {
-                state.errors.push(Box::new(error::Not {
-                    path: path.to_string(),
-                }))
+        let mut contains = false;
+        for value in self.items.iter() {
+            if val == value {
+                contains = true;
+                break;
             }
-        } else {
-            state.missing.push(self.url.clone());
+        }
+
+        if !contains {
+            state.errors.push(Box::new(error::Enum {
+                path: path.to_string(),
+            }))
         }
 
         state

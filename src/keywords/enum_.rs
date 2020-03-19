@@ -1,31 +1,35 @@
-use simd_json::{Value as ValueTrait};
+use simd_json::value::{Value as ValueTrait};
 
-use super::super::helpers;
 use super::super::schema;
 use super::super::validators;
 
 #[allow(missing_copy_implementations)]
-pub struct PropertyNames;
-impl<V: 'static> super::Keyword<V> for PropertyNames
+pub struct Enum;
+impl<V: 'static> super::Keyword<V> for Enum
 where
     V: ValueTrait + std::clone::Clone + std::convert::From<simd_json::value::owned::Value> + std::fmt::Display + std::marker::Sync + std::marker::Send + std::cmp::PartialEq,
     <V as ValueTrait>::Key: std::borrow::Borrow<str> + std::hash::Hash + Eq + std::convert::AsRef<str> + std::fmt::Debug + std::string::ToString + std::marker::Sync + std::marker::Send,
 {
     fn compile(&self, def: &V, ctx: &schema::WalkContext<'_>) -> super::KeywordResult<V> {
-        let property_names = def.get("propertyNames").unwrap();
+        let enum_ = keyword_key_exists!(def, "enum");
 
+        if enum_.is_array() {
+            let enum_ = enum_.as_array().unwrap();
 
-        if property_names.is_object() || property_names.is_bool() {
-            Ok(Some(Box::new(validators::PropertyNames {
-                url: helpers::alter_fragment_path(
-                    ctx.url.clone(),
-                    [ctx.escaped_fragment().as_ref(), "propertyNames"].join("/"),
-                ),
+            if enum_.is_empty() {
+                return Err(schema::SchemaError::Malformed {
+                    path: ctx.fragment.join("/"),
+                    detail: "This array must have at least one element.".to_string(),
+                });
+            }
+
+            Ok(Some(Box::new(validators::Enum {
+                items: enum_.clone(),
             })))
         } else {
             Err(schema::SchemaError::Malformed {
                 path: ctx.fragment.join("/"),
-                detail: "The value of propertyNames must be an object or a boolean".to_string(),
+                detail: "The value of this keyword must be an array.".to_string(),
             })
         }
     }

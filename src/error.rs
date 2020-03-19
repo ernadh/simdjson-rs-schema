@@ -249,3 +249,18 @@ impl_err!(
     "min_properties",
     "MinProperties condition is not met"
 );
+
+#[derive(Debug)]
+#[allow(missing_copy_implementations)]
+pub struct Items {
+    pub path: String,
+    pub detail: String,
+}
+impl_err!(Items, "items", "Items condition is not met", +detail);
+
+#[derive(Debug)]
+#[allow(missing_copy_implementations)]
+pub struct Enum {
+    pub path: String,
+}
+impl_err!(Enum, "enum", "Enum conditions are not met");
