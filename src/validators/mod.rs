@@ -114,7 +114,7 @@ where
         <V as ValueTrait>::Key: std::borrow::Borrow<str> + std::hash::Hash + Eq + std::convert::AsRef<str>;
 }
 
-impl<V> fmt::Debug for dyn Validator<V> + 'static + Send + Sync
+impl<V> fmt::Debug for dyn Validator<V> + Send + Sync
 where
     V: ValueTrait,
 {
@@ -123,5 +123,5 @@ where
     }
 }
 
-pub type BoxedValidator<V> = Box<dyn Validator<V> + 'static + Send + Sync>;
+pub type BoxedValidator<V> = Box<dyn Validator<V> + Send + Sync>;
 pub type Validators<V> = Vec<BoxedValidator<V>>;

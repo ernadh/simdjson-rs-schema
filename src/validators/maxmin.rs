@@ -8,7 +8,7 @@ pub struct Maximum {
     pub number: f64,
 }
 
-impl<V: 'static> super::Validator<V> for Maximum
+impl<V> super::Validator<V> for Maximum
 where
     V: ValueTrait + std::clone::Clone + std::convert::From<simd_json::value::owned::Value> + std::fmt::Display,
     <V as ValueTrait>::Key: std::borrow::Borrow<str> + std::hash::Hash + Eq + std::convert::AsRef<str> + std::fmt::Debug + std::string::ToString + std::marker::Sync + std::marker::Send,
@@ -31,7 +31,7 @@ pub struct ExclusiveMaximum {
     pub number: f64,
 }
 
-impl<V: 'static> super::Validator<V> for ExclusiveMaximum
+impl<V> super::Validator<V> for ExclusiveMaximum
 where
     V: ValueTrait + std::clone::Clone + std::convert::From<simd_json::value::owned::Value> + std::fmt::Display,
     <V as ValueTrait>::Key: std::borrow::Borrow<str> + std::hash::Hash + Eq + std::convert::AsRef<str> + std::fmt::Debug + std::string::ToString + std::marker::Sync + std::marker::Send,
@@ -54,7 +54,7 @@ pub struct Minimum {
     pub number: f64,
 }
 
-impl<V: 'static> super::Validator<V> for Minimum
+impl<V> super::Validator<V> for Minimum
 where
     V: ValueTrait + std::clone::Clone + std::convert::From<simd_json::value::owned::Value> + std::fmt::Display,
     <V as ValueTrait>::Key: std::borrow::Borrow<str> + std::hash::Hash + Eq + std::convert::AsRef<str> + std::fmt::Debug + std::string::ToString + std::marker::Sync + std::marker::Send,
@@ -77,7 +77,7 @@ pub struct ExclusiveMinimum {
     pub number: f64,
 }
 
-impl<V: 'static> super::Validator<V> for ExclusiveMinimum
+impl<V> super::Validator<V> for ExclusiveMinimum
 where
     V: ValueTrait + std::clone::Clone + std::convert::From<simd_json::value::owned::Value> + std::fmt::Display,
     <V as ValueTrait>::Key: std::borrow::Borrow<str> + std::hash::Hash + Eq + std::convert::AsRef<str> + std::fmt::Debug + std::string::ToString + std::marker::Sync + std::marker::Send,

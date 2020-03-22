@@ -9,7 +9,7 @@ use super::schema;
 use super::validators;
 use super::helpers;
 
-pub type KeywordPair<V> = (Vec<&'static str>, Box<dyn Keyword<V> + 'static>);
+pub type KeywordPair<V> = (Vec<&'static str>, Box<dyn Keyword<V>>);
 pub type KeywordResult<V> = Result<Option<validators::BoxedValidator<V>>, schema::SchemaError>;
 pub type KeywordMap<V> = HashMap<&'static str, Arc<KeywordConsumer<V>>>;
 
@@ -157,6 +157,7 @@ pub fn decouple_keyword<V>(keyword_pair: KeywordPair<V>, map: &mut KeywordMap<V>
 where
     V: ValueTrait,
 {
+    println!("Decoupling keyword: {:?}", keyword_pair);
     let (keys, keyword) = keyword_pair;
 
     let consumer = Arc::new(KeywordConsumer {

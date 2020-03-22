@@ -52,13 +52,13 @@ where
 }
 
 #[derive(Debug)]
-pub struct WalkContext<'a> {
-    pub url: &'a url::Url,
+pub struct WalkContext<'walk> {
+    pub url: &'walk url::Url,
     pub fragment: Vec<String>,
-    pub scopes: &'a mut hashbrown::HashMap<String, Vec<String>>,
+    pub scopes: &'walk mut hashbrown::HashMap<String, Vec<String>>,
 }
 
-impl<'a> WalkContext<'a> {
+impl<'walk> WalkContext<'walk> {
     pub fn escaped_fragment(&self) -> String {
         helpers::connect(
             self.fragment
@@ -129,10 +129,12 @@ where
     }
 
     pub fn validate(&self, data: &V) -> validators::ValidationState {
+        println!("Now in validate() with {:?}", data.as_str());
         self.schema.validate_in_scope(data, "", &self.scope)
     }
 
     pub fn validate_in(&self, data: &V, path: &str) -> validators::ValidationState {
+        println!("Now in validate_in() with {:?} {:?}", data.as_str(), path);
         self.schema.validate_in_scope(data, path, &self.scope)
     }
 }
@@ -153,6 +155,7 @@ where
         path: &str,
         scope: &scope::Scope<V>,
     ) -> validators::ValidationState {
+        println!("Now in validate_in_scope() with {:?} {:?}", data.as_str(), path);
         let mut state = validators::ValidationState::new();
 
         for validator in self.validators.iter() {
@@ -224,7 +227,7 @@ where
             let mut scopes = hashbrown::HashMap::new();
 
             for (key, value) in obj.iter() {
-                println!("{:?}", key);
+                println!("{:?} {:?}", key, value.as_str());
                 if !value.is_object() && !value.is_array() && !value.is_bool() {
                     continue;
                 }
@@ -238,6 +241,7 @@ where
                     fragment: vec![key.to_string().clone()],
                     scopes: &mut scopes,
                 };
+
 
                 let scheme = Schema::compile_sub(
                     value.clone(),
@@ -262,7 +266,7 @@ where
             &settings,
         )?;
 
-        println!("{}", validators.len());
+        println!("Validators count {}", validators.len());
 
         let schema = Schema {
             id: Some(id),
@@ -278,7 +282,7 @@ where
 
     fn compile_keywords<'key>(
         def: V,
-        context: &WalkContext<'_>,
+        context: &WalkContext<'key>,
         settings: &CompilationSettings<V>,
     ) -> Result<validators::Validators<V>, SchemaError>
     where
@@ -349,6 +353,7 @@ where
         keywords: &CompilationSettings<V>,
         is_schema: bool,
     ) -> Result<Schema<V>, SchemaError> {
+        println!("In COMPILE_SUB {:?} {:?}", def.as_str(), context);
         let def = helpers::convert_boolean_schema(def);
 
         let id = if is_schema {

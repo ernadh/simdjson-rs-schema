@@ -5,7 +5,7 @@ use super::scope;
 
 #[allow(missing_copy_implementations)]
 pub struct UniqueItems;
-impl<V: 'static> super::Validator<V> for UniqueItems
+impl<V> super::Validator<V> for UniqueItems
 where
     V: Value
         + std::clone::Clone

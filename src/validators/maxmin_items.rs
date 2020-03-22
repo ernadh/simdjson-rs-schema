@@ -8,7 +8,7 @@ pub struct MaxItems {
     pub length: u64,
 }
 
-impl<V: 'static> super::Validator<V> for MaxItems
+impl<V> super::Validator<V> for MaxItems
 where
     V: Value
         + std::clone::Clone
@@ -41,7 +41,7 @@ pub struct MinItems {
     pub length: u64,
 }
 
-impl<V: 'static> super::Validator<V> for MinItems
+impl<V> super::Validator<V> for MinItems
 where
     V: Value
         + std::clone::Clone

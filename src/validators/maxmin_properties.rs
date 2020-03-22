@@ -8,7 +8,7 @@ pub struct MaxProperties {
     pub length: u64,
 }
 
-impl<V: 'static> super::Validator<V> for MaxProperties
+impl<V> super::Validator<V> for MaxProperties
 where
     V: Value
         + std::clone::Clone
@@ -41,7 +41,7 @@ pub struct MinProperties {
     pub length: u64,
 }
 
-impl<V: 'static> super::Validator<V> for MinProperties
+impl<V> super::Validator<V> for MinProperties
 where
     V: Value
         + std::clone::Clone
