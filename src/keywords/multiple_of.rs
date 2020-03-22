@@ -7,8 +7,18 @@ use super::super::validators;
 pub struct MultipleOf;
 impl<V: 'static> super::Keyword<V> for MultipleOf
 where
-    V: ValueTrait + std::clone::Clone + std::convert::From<simd_json::value::owned::Value> + std::fmt::Display,
-    <V as ValueTrait>::Key: std::borrow::Borrow<str> + std::hash::Hash + Eq + std::convert::AsRef<str> + std::fmt::Debug + std::string::ToString + std::marker::Sync + std::marker::Send,
+    V: ValueTrait
+        + std::clone::Clone
+        + std::convert::From<simd_json::value::owned::Value>
+        + std::fmt::Display,
+    <V as ValueTrait>::Key: std::borrow::Borrow<str>
+        + std::hash::Hash
+        + Eq
+        + std::convert::AsRef<str>
+        + std::fmt::Debug
+        + std::string::ToString
+        + std::marker::Sync
+        + std::marker::Send,
 {
     fn compile(&self, def: &V, ctx: &schema::WalkContext<'_>) -> super::KeywordResult<V> {
         let multiple_of = keyword_key_exists!(def, "multipleOf");

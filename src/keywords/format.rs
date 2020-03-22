@@ -1,5 +1,5 @@
 use hashbrown::HashMap;
-use simd_json::value::{Value as ValueTrait};
+use simd_json::value::Value as ValueTrait;
 
 use super::schema;
 use super::validators;
@@ -8,8 +8,18 @@ pub type FormatBuilders<V> = HashMap<String, Box<dyn super::Keyword<V> + 'static
 
 fn default_formats<V>() -> FormatBuilders<V>
 where
-    V: ValueTrait + std::clone::Clone + std::convert::From<simd_json::value::owned::Value> + std::fmt::Display,
-    <V as ValueTrait>::Key: std::borrow::Borrow<str> + std::hash::Hash + Eq + std::convert::AsRef<str> + std::fmt::Debug + std::string::ToString + std::marker::Sync + std::marker::Send,
+    V: ValueTrait
+        + std::clone::Clone
+        + std::convert::From<simd_json::value::owned::Value>
+        + std::fmt::Display,
+    <V as ValueTrait>::Key: std::borrow::Borrow<str>
+        + std::hash::Hash
+        + Eq
+        + std::convert::AsRef<str>
+        + std::fmt::Debug
+        + std::string::ToString
+        + std::marker::Sync
+        + std::marker::Send,
 {
     let mut map: FormatBuilders<V> = HashMap::new();
 
@@ -78,8 +88,18 @@ pub struct Format<V> {
 
 impl<V> Format<V>
 where
-    V: ValueTrait + std::clone::Clone + std::convert::From<simd_json::value::owned::Value> + std::fmt::Display,
-    <V as ValueTrait>::Key: std::borrow::Borrow<str> + std::hash::Hash + Eq + std::convert::AsRef<str> + std::fmt::Debug + std::string::ToString + std::marker::Sync + std::marker::Send,
+    V: ValueTrait
+        + std::clone::Clone
+        + std::convert::From<simd_json::value::owned::Value>
+        + std::fmt::Display,
+    <V as ValueTrait>::Key: std::borrow::Borrow<str>
+        + std::hash::Hash
+        + Eq
+        + std::convert::AsRef<str>
+        + std::fmt::Debug
+        + std::string::ToString
+        + std::marker::Sync
+        + std::marker::Send,
 {
     pub fn new() -> Format<V> {
         Format {
@@ -99,7 +119,11 @@ where
 
 impl<V> super::Keyword<V> for Format<V>
 where
-    V: ValueTrait + std::clone::Clone + std::convert::From<simd_json::value::owned::Value> + std::fmt::Display + 'static,
+    V: ValueTrait
+        + std::clone::Clone
+        + std::convert::From<simd_json::value::owned::Value>
+        + std::fmt::Display
+        + 'static,
 {
     fn compile(&self, def: &V, ctx: &schema::WalkContext<'_>) -> super::KeywordResult<V>
     where

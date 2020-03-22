@@ -1,5 +1,5 @@
 use regex;
-use simd_json::{Value as ValueTrait};
+use simd_json::Value as ValueTrait;
 
 use super::schema;
 use super::validators;
@@ -9,7 +9,14 @@ pub struct Pattern;
 impl<V: std::string::ToString> super::Keyword<V> for Pattern
 where
     V: ValueTrait + std::clone::Clone + std::convert::From<simd_json::value::owned::Value>,
-    <V as ValueTrait>::Key: std::borrow::Borrow<str> + std::hash::Hash + Eq + std::convert::AsRef<str> + std::fmt::Debug + std::string::ToString + std::marker::Sync + std::marker::Send,
+    <V as ValueTrait>::Key: std::borrow::Borrow<str>
+        + std::hash::Hash
+        + Eq
+        + std::convert::AsRef<str>
+        + std::fmt::Debug
+        + std::string::ToString
+        + std::marker::Sync
+        + std::marker::Send,
 {
     fn compile(&self, def: &V, ctx: &schema::WalkContext<'_>) -> super::KeywordResult<V> {
         let pattern = keyword_key_exists!(def, "pattern");
@@ -20,7 +27,10 @@ where
                 Ok(re) => Ok(Some(Box::new(validators::Pattern { regex: re }))),
                 Err(err) => Err(schema::SchemaError::Malformed {
                     path: ctx.fragment.join("/"),
-                    detail: format!("The value of pattern must be a valid regular expression, but {:?}", err),
+                    detail: format!(
+                        "The value of pattern must be a valid regular expression, but {:?}",
+                        err
+                    ),
                 }),
             }
         } else {

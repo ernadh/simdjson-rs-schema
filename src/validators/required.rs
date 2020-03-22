@@ -12,7 +12,6 @@ impl<V> super::Validator<V> for Required
 where
     V: ValueTrait,
 {
-
     fn validate(&self, val: &V, path: &str, _scope: &scope::Scope<V>) -> super::ValidationState
     where
         <V as ValueTrait>::Key: std::borrow::Borrow<str> + std::hash::Hash + Eq,

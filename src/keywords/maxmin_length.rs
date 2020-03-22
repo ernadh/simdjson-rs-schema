@@ -9,8 +9,19 @@ macro_rules! kw_minmax_integer {
         pub struct $name;
         impl<V> super::Keyword<V> for $name
         where
-            V: ValueTrait + std::clone::Clone + std::convert::From<simd_json::value::owned::Value> + std::fmt::Display + 'static,
-            <V as ValueTrait>::Key: std::borrow::Borrow<str> + std::hash::Hash + Eq + std::convert::AsRef<str> + std::fmt::Debug + std::string::ToString + std::marker::Sync + std::marker::Send,
+            V: ValueTrait
+                + std::clone::Clone
+                + std::convert::From<simd_json::value::owned::Value>
+                + std::fmt::Display
+                + 'static,
+            <V as ValueTrait>::Key: std::borrow::Borrow<str>
+                + std::hash::Hash
+                + Eq
+                + std::convert::AsRef<str>
+                + std::fmt::Debug
+                + std::string::ToString
+                + std::marker::Sync
+                + std::marker::Send,
         {
             fn compile(&self, def: &V, ctx: &schema::WalkContext<'_>) -> super::KeywordResult<V> {
                 let length = keyword_key_exists!(def, $keyword);

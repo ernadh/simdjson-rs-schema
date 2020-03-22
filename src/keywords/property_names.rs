@@ -1,4 +1,4 @@
-use simd_json::{Value as ValueTrait};
+use simd_json::Value as ValueTrait;
 
 use super::super::helpers;
 use super::super::schema;
@@ -8,12 +8,24 @@ use super::super::validators;
 pub struct PropertyNames;
 impl<V: 'static> super::Keyword<V> for PropertyNames
 where
-    V: ValueTrait + std::clone::Clone + std::convert::From<simd_json::value::owned::Value> + std::fmt::Display + std::marker::Sync + std::marker::Send + std::cmp::PartialEq,
-    <V as ValueTrait>::Key: std::borrow::Borrow<str> + std::hash::Hash + Eq + std::convert::AsRef<str> + std::fmt::Debug + std::string::ToString + std::marker::Sync + std::marker::Send,
+    V: ValueTrait
+        + std::clone::Clone
+        + std::convert::From<simd_json::value::owned::Value>
+        + std::fmt::Display
+        + std::marker::Sync
+        + std::marker::Send
+        + std::cmp::PartialEq,
+    <V as ValueTrait>::Key: std::borrow::Borrow<str>
+        + std::hash::Hash
+        + Eq
+        + std::convert::AsRef<str>
+        + std::fmt::Debug
+        + std::string::ToString
+        + std::marker::Sync
+        + std::marker::Send,
 {
     fn compile(&self, def: &V, ctx: &schema::WalkContext<'_>) -> super::KeywordResult<V> {
         let property_names = def.get("propertyNames").unwrap();
-
 
         if property_names.is_object() || property_names.is_bool() {
             Ok(Some(Box::new(validators::PropertyNames {

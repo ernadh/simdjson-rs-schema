@@ -1,8 +1,8 @@
 use simd_json::value::Value as ValueTrait;
 
 use super::error;
-use super::scope;
 use super::primitive_types as pt;
+use super::scope;
 
 #[derive(Debug)]
 pub enum TypeKind {
@@ -33,8 +33,18 @@ fn check_type<V: ValueTrait>(val: &V, ty: pt::PrimitiveType) -> bool {
 
 impl<V> super::Validator<V> for Type
 where
-    V: ValueTrait + std::clone::Clone + std::convert::From<simd_json::value::owned::Value> + std::fmt::Display,
-    <V as ValueTrait>::Key: std::borrow::Borrow<str> + std::hash::Hash + Eq + std::convert::AsRef<str> + std::fmt::Debug + std::string::ToString + std::marker::Sync + std::marker::Send,
+    V: ValueTrait
+        + std::clone::Clone
+        + std::convert::From<simd_json::value::owned::Value>
+        + std::fmt::Display,
+    <V as ValueTrait>::Key: std::borrow::Borrow<str>
+        + std::hash::Hash
+        + Eq
+        + std::convert::AsRef<str>
+        + std::fmt::Debug
+        + std::string::ToString
+        + std::marker::Sync
+        + std::marker::Send,
 {
     fn validate(&self, val: &V, path: &str, _scope: &scope::Scope<V>) -> super::ValidationState {
         let mut state = super::ValidationState::new();

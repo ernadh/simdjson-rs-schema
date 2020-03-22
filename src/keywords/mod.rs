@@ -3,11 +3,11 @@ use std::fmt;
 use std::sync::Arc;
 
 use hashbrown::HashMap;
-use simd_json::value::{Value as ValueTrait};
+use simd_json::value::Value as ValueTrait;
 
+use super::helpers;
 use super::schema;
 use super::validators;
-use super::helpers;
 
 pub type KeywordPair<V> = (Vec<&'static str>, Box<dyn Keyword<V>>);
 pub type KeywordResult<V> = Result<Option<validators::BoxedValidator<V>>, schema::SchemaError>;
@@ -58,30 +58,43 @@ macro_rules! keyword_key_exists {
 
 #[macro_use]
 pub mod maxmin_length;
-pub mod contains;
 pub mod const_;
-pub mod items;
-pub mod format;
-pub mod properties;
-pub mod property_names;
-pub mod ref_;
+pub mod contains;
+pub mod dependencies;
 pub mod enum_;
-pub mod required;
-pub mod pattern;
-pub mod type_;
-pub mod unique_items;
-pub mod of;
-pub mod multiple_of;
-pub mod not;
+pub mod format;
+pub mod items;
 pub mod maxmin;
 pub mod maxmin_items;
 pub mod maxmin_properties;
-pub mod dependencies;
+pub mod multiple_of;
+pub mod not;
+pub mod of;
+pub mod pattern;
+pub mod properties;
+pub mod property_names;
+pub mod ref_;
+pub mod required;
+pub mod type_;
+pub mod unique_items;
 
 pub fn default<V: 'static>() -> KeywordMap<V>
 where
-    V: ValueTrait + std::clone::Clone + std::convert::From<simd_json::value::owned::Value> + std::fmt::Display + std::marker::Sync + std::marker::Send + std::cmp::PartialEq,
-    <V as ValueTrait>::Key: std::borrow::Borrow<str> + std::hash::Hash + Eq + std::convert::AsRef<str> + std::fmt::Debug + std::string::ToString + std::marker::Sync + std::marker::Send,
+    V: ValueTrait
+        + std::clone::Clone
+        + std::convert::From<simd_json::value::owned::Value>
+        + std::fmt::Display
+        + std::marker::Sync
+        + std::marker::Send
+        + std::cmp::PartialEq,
+    <V as ValueTrait>::Key: std::borrow::Borrow<str>
+        + std::hash::Hash
+        + Eq
+        + std::convert::AsRef<str>
+        + std::fmt::Debug
+        + std::string::ToString
+        + std::marker::Sync
+        + std::marker::Send,
 {
     let mut map = HashMap::new();
 
@@ -89,24 +102,60 @@ where
     decouple_keyword((vec!["allOf"], Box::new(of::AllOf)), &mut map);
     decouple_keyword((vec!["anyOf"], Box::new(of::AnyOf)), &mut map);
     decouple_keyword((vec!["oneOf"], Box::new(of::OneOf)), &mut map);
-    decouple_keyword((vec!["multipleOf"], Box::new(multiple_of::MultipleOf)), &mut map);
+    decouple_keyword(
+        (vec!["multipleOf"], Box::new(multiple_of::MultipleOf)),
+        &mut map,
+    );
     decouple_keyword((vec!["not"], Box::new(not::Not)), &mut map);
     decouple_keyword((vec!["required"], Box::new(required::Required)), &mut map);
-    decouple_keyword((vec!["dependencies"], Box::new(dependencies::Dependencies)), &mut map);
+    decouple_keyword(
+        (vec!["dependencies"], Box::new(dependencies::Dependencies)),
+        &mut map,
+    );
     decouple_keyword((vec!["type"], Box::new(type_::Type)), &mut map);
     decouple_keyword((vec!["contains"], Box::new(contains::Contains)), &mut map);
     decouple_keyword((vec!["const"], Box::new(const_::Const)), &mut map);
     decouple_keyword((vec!["items"], Box::new(items::Items)), &mut map);
     decouple_keyword((vec!["enum"], Box::new(enum_::Enum)), &mut map);
-    decouple_keyword((vec!["exclusiveMaximum"], Box::new(maxmin::ExclusiveMaximum)), &mut map);
-    decouple_keyword((vec!["exclusiveMinimum"], Box::new(maxmin::ExclusiveMinimum)), &mut map);
-    decouple_keyword((vec!["maxItems"], Box::new(maxmin_items::MaxItems)), &mut map);
-    decouple_keyword((vec!["maxLength"], Box::new(maxmin_length::MaxLength)), &mut map);
-    decouple_keyword((vec!["maxProperties"], Box::new(maxmin_properties::MaxProperties)), &mut map);
+    decouple_keyword(
+        (vec!["exclusiveMaximum"], Box::new(maxmin::ExclusiveMaximum)),
+        &mut map,
+    );
+    decouple_keyword(
+        (vec!["exclusiveMinimum"], Box::new(maxmin::ExclusiveMinimum)),
+        &mut map,
+    );
+    decouple_keyword(
+        (vec!["maxItems"], Box::new(maxmin_items::MaxItems)),
+        &mut map,
+    );
+    decouple_keyword(
+        (vec!["maxLength"], Box::new(maxmin_length::MaxLength)),
+        &mut map,
+    );
+    decouple_keyword(
+        (
+            vec!["maxProperties"],
+            Box::new(maxmin_properties::MaxProperties),
+        ),
+        &mut map,
+    );
     decouple_keyword((vec!["maximum"], Box::new(maxmin::Maximum)), &mut map);
-    decouple_keyword((vec!["minItems"], Box::new(maxmin_items::MinItems)), &mut map);
-    decouple_keyword((vec!["minLength"], Box::new(maxmin_length::MinLength)), &mut map);
-    decouple_keyword((vec!["minProperties"], Box::new(maxmin_properties::MinProperties)), &mut map);
+    decouple_keyword(
+        (vec!["minItems"], Box::new(maxmin_items::MinItems)),
+        &mut map,
+    );
+    decouple_keyword(
+        (vec!["minLength"], Box::new(maxmin_length::MinLength)),
+        &mut map,
+    );
+    decouple_keyword(
+        (
+            vec!["minProperties"],
+            Box::new(maxmin_properties::MinProperties),
+        ),
+        &mut map,
+    );
     decouple_keyword((vec!["minimum"], Box::new(maxmin::Minimum)), &mut map);
     decouple_keyword(
         (vec!["uniqueItems"], Box::new(unique_items::UniqueItems)),
