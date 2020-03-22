@@ -157,7 +157,6 @@ pub fn decouple_keyword<V>(keyword_pair: KeywordPair<V>, map: &mut KeywordMap<V>
 where
     V: ValueTrait,
 {
-    println!("Decoupling keyword: {:?}", keyword_pair);
     let (keys, keyword) = keyword_pair;
 
     let consumer = Arc::new(KeywordConsumer {

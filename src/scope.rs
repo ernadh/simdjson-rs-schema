@@ -51,7 +51,6 @@ where
     where
         <V as ValueTrait>::Key: std::borrow::Borrow<str> + std::hash::Hash + Eq + std::convert::AsRef<str> + std::fmt::Debug + std::string::ToString,
     {
-        println!("resolving {:?}", id);
         let (schema_path, fragment) = helpers::serialize_schema_path(id);
 
         let schema = self.schemes.get(&schema_path).or_else(|| {
@@ -81,14 +80,11 @@ where
     where
         <V as ValueTrait>::Key: std::borrow::Borrow<str> + std::hash::Hash + Eq + std::convert::AsRef<str> + std::fmt::Debug + std::string::ToString,
     {
-        println!("IN  COMPILE AND RETURN");
         let schema = schema::compile(
             def,
             None,
             schema::CompilationSettings::new(self.keywords.clone(), ban_unknown),
         )?;
-        println!("COMPILATION DONE");
-        //dbg!(schema);
         self.add_and_return(schema.id.clone().as_ref().unwrap(), schema)
     }
 
@@ -108,7 +104,6 @@ where
         }
 
         if !self.schemes.contains_key(&id_str) {
-            println!("schema {} not present so we are adding it", id_str);
             self.schemes.insert(id_str.clone(), schema);
             Ok(schema::ScopedSchema::new(self, &self.schemes[&id_str]))
         } else {
@@ -120,7 +115,6 @@ where
     where
         T: keywords::Keyword<V> + 'static,
     {
-        println!("add_keyword {:?}", keys.clone());
         keywords::decouple_keyword((keys, Box::new(keyword)), &mut self.keywords);
     }
 }

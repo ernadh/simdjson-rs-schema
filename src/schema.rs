@@ -129,12 +129,10 @@ where
     }
 
     pub fn validate(&self, data: &V) -> validators::ValidationState {
-        println!("Now in validate() with {:?}", data.as_str());
         self.schema.validate_in_scope(data, "", &self.scope)
     }
 
     pub fn validate_in(&self, data: &V, path: &str) -> validators::ValidationState {
-        println!("Now in validate_in() with {:?} {:?}", data.as_str(), path);
         self.schema.validate_in_scope(data, path, &self.scope)
     }
 }
@@ -155,16 +153,9 @@ where
         path: &str,
         scope: &scope::Scope<V>,
     ) -> validators::ValidationState {
-        println!("Now in validate_in_scope() with {:?} {:?}", data.as_str(), path);
         let mut state = validators::ValidationState::new();
 
         for validator in self.validators.iter() {
-            println!(
-                "ANOTHER VALIDATOR {:?} {:?} {:?}",
-                data.as_str(),
-                path,
-                state
-            );
             state.append(validator.validate(data, path, scope))
         }
 
@@ -208,8 +199,6 @@ where
             return Err(SchemaError::NotAnObject);
         }
 
-        println!("DEF {:?}", def.as_str());
-
         let id = if external_id.is_some() {
             external_id.unwrap()
         } else {
@@ -227,12 +216,10 @@ where
             let mut scopes = hashbrown::HashMap::new();
 
             for (key, value) in obj.iter() {
-                println!("{:?} {:?}", key, value.as_str());
                 if !value.is_object() && !value.is_array() && !value.is_bool() {
                     continue;
                 }
                 if FINAL_KEYS.contains(&key.as_ref()[..]) {
-                    println!("{}", "it's a FINAL KEYS elem");
                     continue;
                 }
 
@@ -266,7 +253,6 @@ where
             &settings,
         )?;
 
-        println!("Validators count {}", validators.len());
 
         let schema = Schema {
             id: Some(id),
@@ -301,7 +287,6 @@ where
             .map(|key| key.as_ref())
             .collect();
         let mut not_consumed = hashbrown::HashSet::new();
-        println!("{} {:?}", "Compiling keywords", keys);
 
         loop {
             let key = keys.iter().next().cloned();
@@ -353,7 +338,6 @@ where
         keywords: &CompilationSettings<V>,
         is_schema: bool,
     ) -> Result<Schema<V>, SchemaError> {
-        println!("In COMPILE_SUB {:?} {:?}", def.as_str(), context);
         let def = helpers::convert_boolean_schema(def);
 
         let id = if is_schema {
@@ -403,7 +387,6 @@ where
                     tree.insert(helpers::encode(key.as_ref()), scheme);
                 }
             } else if def.is_array() {
-                println!("It's an array {:?}", def.as_str());
                 let array = def.as_array().unwrap();
                 let parent_key = &context.fragment[context.fragment.len() - 1];
 
@@ -441,9 +424,6 @@ where
                 .scopes
                 .insert(id.clone().unwrap().into_string(), context.fragment.clone());
         }
-
-        println!("IS SCHEMA: {}", is_schema);
-        println!("IS OBJECT: {}", def.is_object());
 
         let validators = if is_schema && def.is_object() {
             Schema::compile_keywords(def.clone(), context, keywords)?
