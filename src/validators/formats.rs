@@ -1,7 +1,7 @@
 use super::scope;
 use chrono;
 use publicsuffix::List;
-use simd_json::value::Value as ValueTrait;
+use value_trait::*;
 use std::net;
 
 use super::error;
@@ -11,8 +11,8 @@ pub struct DateTime;
 
 impl<V> super::Validator<V> for DateTime
 where
-    V: ValueTrait + std::clone::Clone + std::convert::From<simd_json::value::owned::Value>,
-    <V as ValueTrait>::Key: std::borrow::Borrow<str>
+    V: Value + std::clone::Clone + std::convert::From<simd_json::value::owned::Value>,
+    <V as Value>::Key: std::borrow::Borrow<str>
         + std::hash::Hash
         + Eq
         + std::convert::AsRef<str>
@@ -39,7 +39,7 @@ pub struct Email;
 
 impl<V> super::Validator<V> for Email
 where
-    V: ValueTrait,
+    V: Value,
 {
     fn validate(&self, val: &V, path: &str, _scope: &scope::Scope<V>) -> super::ValidationState {
         let string = nonstrict_process!(val.as_str(), path);
@@ -59,7 +59,7 @@ pub struct Hostname;
 
 impl<V> super::Validator<V> for Hostname
 where
-    V: ValueTrait,
+    V: Value,
 {
     fn validate(&self, val: &V, path: &str, _scope: &scope::Scope<V>) -> super::ValidationState {
         let string = nonstrict_process!(val.as_str(), path);
@@ -79,7 +79,7 @@ pub struct Ipv4;
 
 impl<V> super::Validator<V> for Ipv4
 where
-    V: ValueTrait,
+    V: Value,
 {
     fn validate(&self, val: &V, path: &str, _scope: &scope::Scope<V>) -> super::ValidationState {
         let string = nonstrict_process!(val.as_str(), path);
@@ -99,7 +99,7 @@ pub struct Ipv6;
 
 impl<V> super::Validator<V> for Ipv6
 where
-    V: ValueTrait,
+    V: Value,
 {
     fn validate(&self, val: &V, path: &str, _scope: &scope::Scope<V>) -> super::ValidationState {
         let string = nonstrict_process!(val.as_str(), path);
@@ -119,7 +119,7 @@ pub struct Uuid;
 
 impl<V> super::Validator<V> for Uuid
 where
-    V: ValueTrait,
+    V: Value,
 {
     fn validate(&self, val: &V, path: &str, _scope: &scope::Scope<V>) -> super::ValidationState {
         let string = nonstrict_process!(val.as_str(), path);
@@ -139,7 +139,7 @@ pub struct Uri;
 
 impl<V> super::Validator<V> for Uri
 where
-    V: ValueTrait,
+    V: Value,
 {
     fn validate(&self, val: &V, path: &str, _scope: &scope::Scope<V>) -> super::ValidationState {
         let string = nonstrict_process!(val.as_str(), path);
@@ -159,7 +159,7 @@ pub struct UriReference;
 
 impl<V> super::Validator<V> for UriReference
 where
-    V: ValueTrait,
+    V: Value,
 {
     fn validate(&self, val: &V, path: &str, _scope: &scope::Scope<V>) -> super::ValidationState {
         let string = nonstrict_process!(val.as_str(), path);

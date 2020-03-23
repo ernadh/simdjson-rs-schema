@@ -3,7 +3,7 @@ use std::fmt;
 use std::sync::Arc;
 
 use hashbrown::HashMap;
-use simd_json::value::Value as ValueTrait;
+use value_trait::*;
 
 use super::helpers;
 use super::schema;
@@ -15,11 +15,11 @@ pub type KeywordMap<V> = HashMap<&'static str, Arc<KeywordConsumer<V>>>;
 
 pub trait Keyword<V>: Send + Sync + any::Any
 where
-    V: ValueTrait + std::clone::Clone + std::convert::From<simd_json::value::owned::Value>,
+    V: Value + std::clone::Clone + std::convert::From<simd_json::value::owned::Value>,
 {
     fn compile(&self, def: &V, ctx: &schema::WalkContext) -> KeywordResult<V>
     where
-        <V as ValueTrait>::Key: std::borrow::Borrow<str> + std::hash::Hash + Eq;
+        <V as Value>::Key: std::borrow::Borrow<str> + std::hash::Hash + Eq;
     fn is_exclusive(&self) -> bool {
         false
     }
@@ -27,12 +27,12 @@ where
 
 impl<T: 'static + Send + Sync + any::Any, V> Keyword<V> for T
 where
-    V: ValueTrait + std::clone::Clone + std::convert::From<simd_json::value::owned::Value>,
+    V: Value + std::clone::Clone + std::convert::From<simd_json::value::owned::Value>,
     T: Fn(&V, &schema::WalkContext<'_>) -> KeywordResult<V>,
 {
     fn compile(&self, def: &V, ctx: &schema::WalkContext<'_>) -> KeywordResult<V>
     where
-        <V as ValueTrait>::Key: std::borrow::Borrow<str> + std::hash::Hash + Eq,
+        <V as Value>::Key: std::borrow::Borrow<str> + std::hash::Hash + Eq,
     {
         self(def, ctx)
     }
@@ -80,14 +80,14 @@ pub mod unique_items;
 
 pub fn default<V: 'static>() -> KeywordMap<V>
 where
-    V: ValueTrait
+    V: Value
         + std::clone::Clone
         + std::convert::From<simd_json::value::owned::Value>
         + std::fmt::Display
         + std::marker::Sync
         + std::marker::Send
         + std::cmp::PartialEq,
-    <V as ValueTrait>::Key: std::borrow::Borrow<str>
+    <V as Value>::Key: std::borrow::Borrow<str>
         + std::hash::Hash
         + Eq
         + std::convert::AsRef<str>
@@ -183,7 +183,7 @@ where
 #[derive(Debug)]
 pub struct KeywordConsumer<V>
 where
-    V: ValueTrait,
+    V: Value,
 {
     pub keys: Vec<&'static str>,
     pub keyword: Box<dyn Keyword<V> + 'static>,
@@ -191,7 +191,7 @@ where
 
 impl<V> KeywordConsumer<V>
 where
-    V: ValueTrait,
+    V: Value,
 {
     pub fn consume(&self, set: &mut hashbrown::HashSet<&str>) {
         for key in self.keys.iter() {
@@ -204,7 +204,7 @@ where
 
 pub fn decouple_keyword<V>(keyword_pair: KeywordPair<V>, map: &mut KeywordMap<V>)
 where
-    V: ValueTrait,
+    V: Value,
 {
     let (keys, keyword) = keyword_pair;
 

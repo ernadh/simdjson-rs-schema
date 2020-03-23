@@ -1,5 +1,4 @@
 use regex;
-use simd_json::value::Value as ValueTrait;
 use url;
 use value_trait::*;
 

@@ -1,4 +1,4 @@
-use simd_json::value::Value as ValueTrait;
+use value_trait::*;
 
 use super::schema;
 use super::validators;

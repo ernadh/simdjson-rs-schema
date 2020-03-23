@@ -1,14 +1,14 @@
 use super::keywords;
 use super::schema;
 use hashbrown::HashMap;
-use simd_json::value::Value as ValueTrait;
+use value_trait::*;
 
 use super::helpers;
 
 #[derive(Debug)]
 pub struct Scope<V>
 where
-    V: ValueTrait,
+    V: Value,
 {
     keywords: keywords::KeywordMap<V>,
     schemes: HashMap<String, schema::Schema<V>>,
@@ -16,14 +16,14 @@ where
 
 impl<V: 'static> Scope<V>
 where
-    V: ValueTrait
+    V: Value
         + std::clone::Clone
         + std::convert::From<simd_json::value::owned::Value>
         + std::fmt::Display
         + std::marker::Sync
         + std::marker::Send
         + std::cmp::PartialEq,
-    <V as ValueTrait>::Key: std::borrow::Borrow<str>
+    <V as Value>::Key: std::borrow::Borrow<str>
         + std::hash::Hash
         + Eq
         + std::convert::AsRef<str>
@@ -44,7 +44,7 @@ where
 
     pub fn with_formats<F>(build_formats: F) -> Scope<V>
     where
-        V: ValueTrait,
+        V: Value,
         F: FnOnce(&mut keywords::format::FormatBuilders<V>),
     {
         let mut scope = Scope {
@@ -62,7 +62,7 @@ where
 
     pub fn resolve(&self, id: &url::Url) -> Option<schema::ScopedSchema<V>>
     where
-        <V as ValueTrait>::Key: std::borrow::Borrow<str>
+        <V as Value>::Key: std::borrow::Borrow<str>
             + std::hash::Hash
             + Eq
             + std::convert::AsRef<str>
@@ -96,7 +96,7 @@ where
         ban_unknown: bool,
     ) -> Result<schema::ScopedSchema<V>, schema::SchemaError>
     where
-        <V as ValueTrait>::Key: std::borrow::Borrow<str>
+        <V as Value>::Key: std::borrow::Borrow<str>
             + std::hash::Hash
             + Eq
             + std::convert::AsRef<str>
@@ -118,7 +118,7 @@ where
         schema: schema::Schema<V>,
     ) -> Result<schema::ScopedSchema<V>, schema::SchemaError>
     where
-        <V as ValueTrait>::Key: std::borrow::Borrow<str>
+        <V as Value>::Key: std::borrow::Borrow<str>
             + std::hash::Hash
             + Eq
             + std::convert::AsRef<str>

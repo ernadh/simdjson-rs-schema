@@ -1,4 +1,4 @@
-use simd_json::Value as ValueTrait;
+use value_trait::*;
 
 use super::super::schema;
 use super::super::validators;
@@ -7,11 +7,11 @@ use super::super::validators;
 pub struct UniqueItems;
 impl<V: 'static + std::string::ToString> super::Keyword<V> for UniqueItems
 where
-    V: ValueTrait
+    V: Value
         + std::clone::Clone
         + std::convert::From<simd_json::value::owned::Value>
         + std::fmt::Display,
-    <V as ValueTrait>::Key: std::borrow::Borrow<str>
+    <V as Value>::Key: std::borrow::Borrow<str>
         + std::hash::Hash
         + Eq
         + std::convert::AsRef<str>

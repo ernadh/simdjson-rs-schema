@@ -1,4 +1,4 @@
-use simd_json::value::Value as ValueTrait;
+use value_trait::*;
 use url;
 
 use super::error;
@@ -11,14 +11,14 @@ pub struct AllOf {
 
 impl<V: 'static> super::Validator<V> for AllOf
 where
-    V: ValueTrait
+    V: Value
         + std::clone::Clone
         + std::convert::From<simd_json::value::owned::Value>
         + std::fmt::Display
         + std::marker::Sync
         + std::marker::Send
         + std::cmp::PartialEq,
-    <V as ValueTrait>::Key: std::borrow::Borrow<str>
+    <V as Value>::Key: std::borrow::Borrow<str>
         + std::hash::Hash
         + Eq
         + std::convert::AsRef<str>
@@ -51,14 +51,14 @@ pub struct AnyOf {
 
 impl<V: 'static> super::Validator<V> for AnyOf
 where
-    V: ValueTrait
+    V: Value
         + std::clone::Clone
         + std::convert::From<simd_json::value::owned::Value>
         + std::fmt::Display
         + std::marker::Sync
         + std::marker::Send
         + std::cmp::PartialEq,
-    <V as ValueTrait>::Key: std::borrow::Borrow<str>
+    <V as Value>::Key: std::borrow::Borrow<str>
         + std::hash::Hash
         + Eq
         + std::convert::AsRef<str>
@@ -109,7 +109,7 @@ pub struct OneOf {
 
 impl<V: 'static> super::Validator<V> for OneOf
 where
-    V: ValueTrait
+    V: Value
         + std::clone::Clone
         + std::convert::From<simd_json::value::owned::Value>
         + std::fmt::Display
@@ -117,7 +117,7 @@ where
         + std::marker::Send
         + std::cmp::PartialEq
         + 'static,
-    <V as ValueTrait>::Key: std::borrow::Borrow<str>
+    <V as Value>::Key: std::borrow::Borrow<str>
         + std::hash::Hash
         + Eq
         + std::convert::AsRef<str>

@@ -1,4 +1,4 @@
-use simd_json::value::Value as ValueTrait;
+use value_trait::*;
 
 use super::error;
 use super::scope;
@@ -10,11 +10,11 @@ pub struct MaxLength {
 
 impl<V> super::Validator<V> for MaxLength
 where
-    V: ValueTrait
+    V: Value
         + std::clone::Clone
         + std::convert::From<simd_json::value::owned::Value>
         + std::fmt::Display,
-    <V as ValueTrait>::Key: std::borrow::Borrow<str>
+    <V as Value>::Key: std::borrow::Borrow<str>
         + std::hash::Hash
         + Eq
         + std::convert::AsRef<str>
@@ -43,11 +43,11 @@ pub struct MinLength {
 
 impl<V> super::Validator<V> for MinLength
 where
-    V: ValueTrait
+    V: Value
         + std::clone::Clone
         + std::convert::From<simd_json::value::owned::Value>
         + std::fmt::Display,
-    <V as ValueTrait>::Key: std::borrow::Borrow<str>
+    <V as Value>::Key: std::borrow::Borrow<str>
         + std::hash::Hash
         + Eq
         + std::convert::AsRef<str>

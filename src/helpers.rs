@@ -1,5 +1,5 @@
 use simd_json::json;
-use simd_json::value::Value as ValueTrait;
+use value_trait::*;
 use url::percent_encoding;
 use url::Url;
 use uuid::Uuid;
@@ -31,10 +31,10 @@ pub fn generate_id() -> Url {
     Url::parse(&format!("json-schema://{}", uuid)).unwrap()
 }
 
-pub fn parse_url_key<V: ValueTrait>(key: &str, obj: &V) -> Result<Option<Url>, schema::SchemaError>
+pub fn parse_url_key<V: Value>(key: &str, obj: &V) -> Result<Option<Url>, schema::SchemaError>
 where
-    V: ValueTrait,
-    <V as ValueTrait>::Key:
+    V: Value,
+    <V as Value>::Key:
         std::borrow::Borrow<str> + std::hash::Hash + Eq + std::convert::AsRef<str>,
 {
     match obj.get(key) {
@@ -104,10 +104,10 @@ pub fn serialize_schema_path(url: &Url) -> (String, Option<String>) {
     }
 }
 
-pub fn convert_boolean_schema<V: ValueTrait>(val: V) -> V
+pub fn convert_boolean_schema<V: Value>(val: V) -> V
 where
-    V: ValueTrait + std::convert::From<simd_json::value::owned::Value>,
-    <V as ValueTrait>::Key:
+    V: Value + std::convert::From<simd_json::value::owned::Value>,
+    <V as Value>::Key:
         std::borrow::Borrow<str> + std::hash::Hash + Eq + std::convert::AsRef<str>,
 {
     match val.as_bool() {
@@ -122,13 +122,13 @@ where
     }
 }
 
-pub fn parse_url_key_with_base<V: ValueTrait>(
+pub fn parse_url_key_with_base<V: Value>(
     key: &str,
     obj: &V,
     base: &Url,
 ) -> Result<Option<Url>, schema::SchemaError>
 where
-    <V as ValueTrait>::Key:
+    <V as Value>::Key:
         std::borrow::Borrow<str> + std::hash::Hash + Eq + std::convert::AsRef<str>,
 {
     match obj.get(key) {

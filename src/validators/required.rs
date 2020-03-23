@@ -1,4 +1,4 @@
-use simd_json::value::Value as ValueTrait;
+use value_trait::*;
 
 use super::error;
 use super::scope;
@@ -10,11 +10,11 @@ pub struct Required {
 
 impl<V> super::Validator<V> for Required
 where
-    V: ValueTrait,
+    V: Value,
 {
     fn validate(&self, val: &V, path: &str, _scope: &scope::Scope<V>) -> super::ValidationState
     where
-        <V as ValueTrait>::Key: std::borrow::Borrow<str> + std::hash::Hash + Eq,
+        <V as Value>::Key: std::borrow::Borrow<str> + std::hash::Hash + Eq,
     {
         let mut state = super::ValidationState::new();
 

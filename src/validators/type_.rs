@@ -1,4 +1,4 @@
-use simd_json::value::Value as ValueTrait;
+use value_trait::*;
 
 use super::error;
 use super::primitive_types as pt;
@@ -15,7 +15,7 @@ pub struct Type {
     pub item: TypeKind,
 }
 
-fn check_type<V: ValueTrait>(val: &V, ty: pt::PrimitiveType) -> bool {
+fn check_type<V: Value>(val: &V, ty: pt::PrimitiveType) -> bool {
     match ty {
         pt::PrimitiveType::Array => val.is_array(),
         pt::PrimitiveType::Boolean => val.is_bool(),
@@ -33,11 +33,11 @@ fn check_type<V: ValueTrait>(val: &V, ty: pt::PrimitiveType) -> bool {
 
 impl<V> super::Validator<V> for Type
 where
-    V: ValueTrait
+    V: Value
         + std::clone::Clone
         + std::convert::From<simd_json::value::owned::Value>
         + std::fmt::Display,
-    <V as ValueTrait>::Key: std::borrow::Borrow<str>
+    <V as Value>::Key: std::borrow::Borrow<str>
         + std::hash::Hash
         + Eq
         + std::convert::AsRef<str>

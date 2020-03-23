@@ -1,5 +1,5 @@
 use regex;
-use simd_json::Value as ValueTrait;
+use value_trait::*;
 
 use super::schema;
 use super::validators;
@@ -8,8 +8,8 @@ use super::validators;
 pub struct Pattern;
 impl<V: std::string::ToString> super::Keyword<V> for Pattern
 where
-    V: ValueTrait + std::clone::Clone + std::convert::From<simd_json::value::owned::Value>,
-    <V as ValueTrait>::Key: std::borrow::Borrow<str>
+    V: Value + std::clone::Clone + std::convert::From<simd_json::value::owned::Value>,
+    <V as Value>::Key: std::borrow::Borrow<str>
         + std::hash::Hash
         + Eq
         + std::convert::AsRef<str>

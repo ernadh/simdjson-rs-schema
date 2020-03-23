@@ -1,5 +1,5 @@
 use hashbrown::HashMap;
-use simd_json::value::Value as ValueTrait;
+use value_trait::*;
 
 use super::schema;
 use super::validators;
@@ -8,11 +8,11 @@ pub type FormatBuilders<V> = HashMap<String, Box<dyn super::Keyword<V> + 'static
 
 fn default_formats<V>() -> FormatBuilders<V>
 where
-    V: ValueTrait
+    V: Value
         + std::clone::Clone
         + std::convert::From<simd_json::value::owned::Value>
         + std::fmt::Display,
-    <V as ValueTrait>::Key: std::borrow::Borrow<str>
+    <V as Value>::Key: std::borrow::Borrow<str>
         + std::hash::Hash
         + Eq
         + std::convert::AsRef<str>
@@ -88,11 +88,11 @@ pub struct Format<V> {
 
 impl<V> Format<V>
 where
-    V: ValueTrait
+    V: Value
         + std::clone::Clone
         + std::convert::From<simd_json::value::owned::Value>
         + std::fmt::Display,
-    <V as ValueTrait>::Key: std::borrow::Borrow<str>
+    <V as Value>::Key: std::borrow::Borrow<str>
         + std::hash::Hash
         + Eq
         + std::convert::AsRef<str>
@@ -119,7 +119,7 @@ where
 
 impl<V> super::Keyword<V> for Format<V>
 where
-    V: ValueTrait
+    V: Value
         + std::clone::Clone
         + std::convert::From<simd_json::value::owned::Value>
         + std::fmt::Display
@@ -127,7 +127,7 @@ where
 {
     fn compile(&self, def: &V, ctx: &schema::WalkContext<'_>) -> super::KeywordResult<V>
     where
-        <V as ValueTrait>::Key: std::borrow::Borrow<str> + std::hash::Hash + Eq,
+        <V as Value>::Key: std::borrow::Borrow<str> + std::hash::Hash + Eq,
     {
         let format = keyword_key_exists!(def, "format");
 

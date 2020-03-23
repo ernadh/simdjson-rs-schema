@@ -6,7 +6,7 @@ edition = "2018"
 build = "build.rs"
 
 [dependencies]
-simd-json = { version = "0.3.0" }
+simd-json = { version = "0.3.*" }
 value-trait = "0.1.3"
 url = { version = "1" }
 hashbrown = { version = "0.7" }

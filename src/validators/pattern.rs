@@ -1,5 +1,5 @@
 use regex;
-use simd_json::value::Value as ValueTrait;
+use value_trait::*;
 
 use super::error;
 use super::scope;
@@ -11,7 +11,7 @@ pub struct Pattern {
 
 impl<V> super::Validator<V> for Pattern
 where
-    V: ValueTrait,
+    V: Value,
 {
     fn validate(&self, val: &V, path: &str, _scope: &scope::Scope<V>) -> super::ValidationState {
         let string = nonstrict_process!(val.as_str(), path);
