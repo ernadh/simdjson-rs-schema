@@ -1,8 +1,8 @@
 use simd_json::json;
-use value_trait::*;
 use url::percent_encoding;
 use url::Url;
 use uuid::Uuid;
+use value_trait::*;
 
 use super::schema;
 
@@ -34,8 +34,7 @@ pub fn generate_id() -> Url {
 pub fn parse_url_key<V: Value>(key: &str, obj: &V) -> Result<Option<Url>, schema::SchemaError>
 where
     V: Value,
-    <V as Value>::Key:
-        std::borrow::Borrow<str> + std::hash::Hash + Eq + std::convert::AsRef<str>,
+    <V as Value>::Key: std::borrow::Borrow<str> + std::hash::Hash + Eq + std::convert::AsRef<str>,
 {
     match obj.get(key) {
         Some(value) => match value.as_str() {
@@ -107,8 +106,7 @@ pub fn serialize_schema_path(url: &Url) -> (String, Option<String>) {
 pub fn convert_boolean_schema<V: Value>(val: V) -> V
 where
     V: Value + std::convert::From<simd_json::value::owned::Value>,
-    <V as Value>::Key:
-        std::borrow::Borrow<str> + std::hash::Hash + Eq + std::convert::AsRef<str>,
+    <V as Value>::Key: std::borrow::Borrow<str> + std::hash::Hash + Eq + std::convert::AsRef<str>,
 {
     match val.as_bool() {
         Some(b) => {
@@ -128,8 +126,7 @@ pub fn parse_url_key_with_base<V: Value>(
     base: &Url,
 ) -> Result<Option<Url>, schema::SchemaError>
 where
-    <V as Value>::Key:
-        std::borrow::Borrow<str> + std::hash::Hash + Eq + std::convert::AsRef<str>,
+    <V as Value>::Key: std::borrow::Borrow<str> + std::hash::Hash + Eq + std::convert::AsRef<str>,
 {
     match obj.get(key) {
         Some(value) => match value.as_str() {

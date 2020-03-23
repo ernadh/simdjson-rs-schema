@@ -229,7 +229,6 @@ where
                     scopes: &mut scopes,
                 };
 
-
                 let scheme = Schema::compile_sub(
                     value.clone(),
                     &mut context,
@@ -252,7 +251,6 @@ where
             },
             &settings,
         )?;
-
 
         let schema = Schema {
             id: Some(id),

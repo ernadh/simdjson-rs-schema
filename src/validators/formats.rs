@@ -1,8 +1,8 @@
 use super::scope;
 use chrono;
 use publicsuffix::List;
-use value_trait::*;
 use std::net;
+use value_trait::*;
 
 use super::error;
 

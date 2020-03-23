@@ -1,5 +1,5 @@
-use value_trait::*;
 use url::Url;
+use value_trait::*;
 
 use super::schema;
 use super::validators;

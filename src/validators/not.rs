@@ -1,5 +1,5 @@
-use value_trait::*;
 use url;
+use value_trait::*;
 
 use super::error;
 use super::scope;
